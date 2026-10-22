@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mi Racha · Control de estudio diario</title>
+  <meta name="description" content="Registra lo que estudias cada día y mantén viva tu racha." />
+
+  <!--
+    La única familia tipográfica de la app, desde CDN. Su nombre vive también en
+    `--fuente`, en `:root` de `estilos.css`: son las dos menciones que permite
+    RF-006, y ninguna más.
+
+    Sin atributos a propósito, ni manejador de error ni precarga: nada fuerza
+    la fuente y nada la vigila, así que no puede retrasar el arranque ni romper
+    nada. La pila de reserva vive en `--fuente`, el primer pintado no la espera,
+    y el pie no avisa porque no hay detección y sin promesa no hay nada que mentir.
+
+    El peso se pide como rango porque la familia es variable: con pesos sueltos
+    el CDN devuelve un bloque fijo por peso. El rango da los 400, 600 y 700 que
+    usa la hoja, y la cursiva cubre `.sesion__frase` y `.sesion__vacio`.
+  -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Faustina:ital,wght@0,300..700;1,300..700&display=swap" />
+
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+  <div class="contenedor">
+
+    <!-- ============ PANTALLA 1 · INICIO ============ -->
+    <section class="pantalla pantalla--centro" id="pantalla-inicio">
+      <div class="centro">
+        <p class="marca">Mi Racha</p>
+        <h1 class="titulo">¿Listo para empezar?</h1>
+        <p class="subtitulo">
+          Registra lo que estudias cada día y mantén viva tu racha.
+        </p>
+        <button type="button" class="boton boton--grande" id="boton-iniciar-sesion">
+          Iniciar sesión
+        </button>
+        <p class="ayuda" id="resumen-inicio"></p>
+      </div>
+    </section>
+
+    <!-- ============ PANTALLA 2 · INTENCIÓN ============ -->
+    <section class="pantalla pantalla--centro" id="pantalla-intencion" hidden>
+      <div class="centro">
+        <p class="marca">Paso 1 de 2</p>
+        <h1 class="titulo">¿Cuál es tu intención de hoy?</h1>
+        <p class="subtitulo">
+          Escribe una frase para recordar por qué te pones a estudiar hoy.
+        </p>
+        <form id="formulario-frase" novalidate>
+          <label class="rotulo" for="frase">Mi frase de hoy</label>
+          <textarea
+            id="frase"
+            name="frase"
+            rows="3"
+            maxlength="140"
+            placeholder="Ejemplo: Hoy termino los ejercicios de JavaScript"
+            required
+          ></textarea>
+          <p class="mensaje mensaje--error" id="mensaje-frase" role="alert" hidden></p>
+          <button type="submit" class="boton boton--grande">Listo</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ PANTALLA 3 · TABLERO ============ -->
+    <section class="pantalla" id="pantalla-tablero" hidden>
+
+      <header class="cabecera">
+        <div class="cabecera__texto">
+          <p class="rotulo rotulo--claro">Tu frase</p>
+          <h1 class="frase" id="frase-actual">Sin frase</h1>
+        </div>
+        <button type="button" class="boton boton--suave" id="boton-cambiar-frase">
+          Cambiar frase
+        </button>
+        <button type="button" class="boton boton--suave" id="boton-modo-claro" aria-checked="false">
+          <span class="oculto">Modo claro</span>
+        </button>
+      </header>
+
+      <section class="tarjeta racha" aria-labelledby="titulo-racha">
+        <h2 class="oculto" id="titulo-racha">Racha actual</h2>
+        <p class="racha__numero" id="racha-dias">0</p>
+        <p class="racha__texto" id="racha-texto">Aún no tienes racha</p>
+        <p class="racha__nota" id="racha-nota"></p>
+      </section>
+
+      <div class="tablero">
+
+        <!-- Formulario para registrar el avance del día -->
+        <section class="tarjeta" aria-labelledby="titulo-nueva">
+          <h2 class="tarjeta__titulo" id="titulo-nueva">Nueva sesión</h2>
+
+          <form id="formulario-sesion" novalidate>
+            <div class="campo">
+              <label class="rotulo" for="fecha">Fecha</label>
+              <input type="date" id="fecha" name="fecha" required />
+              <p class="ayuda">Puedes registrar días anteriores. No se permiten fechas futuras.</p>
+            </div>
+
+            <div class="campo">
+              <label class="rotulo" for="minutos">Minutos estudiados</label>
+              <input
+                type="number"
+                id="minutos"
+                name="minutos"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                placeholder="Ejemplo: 45"
+                required
+              />
+            </div>
+
+            <div class="campo">
+              <label class="rotulo" for="avances">Avances del día</label>
+              <textarea
+                id="avances"
+                name="avances"
+                rows="5"
+                placeholder="¿Qué aprendiste o terminaste hoy?"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="boton">Guardar sesión</button>
+            <p class="mensaje" id="mensaje-formulario" role="status" aria-live="polite" hidden></p>
+          </form>
+        </section>
+
+        <!-- Historial de sesiones -->
+        <section class="tarjeta" aria-labelledby="titulo-historial">
+          <h2 class="tarjeta__titulo" id="titulo-historial">Historial de sesiones</h2>
+          <p class="resumen" id="resumen"></p>
+          <ol class="sesiones" id="lista-sesiones"></ol>
+          <p class="vacio" id="lista-vacia" hidden>
+            Todavía no has registrado ninguna sesión. Cuando guardes tu primer avance aparecerá aquí.
+          </p>
+          <!-- Fuera del <ol> a propósito: el listado son las sesiones y este botón
+               no es una sesión, va al final de la tarjeta (RF-004). -->
+          <button type="button" id="boton-ver-resumenes" class="boton boton--suave">Ver resúmenes…</button>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- ============ PANTALLA 4 · RESUMEN SEMANAL ============ -->
+    <!-- El orden de los bloques es el de RF-011: encabezado, selector,
+         cabecera, lista de días y vuelta. Nace oculta y todavía sin
+         listeners; por eso la sección está ya en 'Pantallas'. -->
+    <section class="pantalla" id="pantalla-resumen-semanal" hidden aria-labelledby="encabezado-resumen-semanal">
+      <h1 class="titulo" id="encabezado-resumen-semanal" tabindex="-1">Resumen semanal</h1>
+
+      <label class="rotulo" for="selector-semana">Semana</label>
+      <select id="selector-semana"></select>
+
+      <p class="resumen" id="resumen-semanal"></p>
+      <ol class="dias" id="lista-dias"></ol>
+
+      <button type="button" class="boton boton--suave" id="boton-volver-tablero">
+        Volver al tablero
+      </button>
+    </section>
+
+    <p class="pie" id="pie-modo"></p>
+  </div>
+
+  <noscript>
+    <p style="padding:1rem;text-align:center">
+      Esta aplicación necesita JavaScript activado para funcionar.
+    </p>
+  </noscript>
+
+  <!--
+    sql.js = SQLite compilado a WebAssembly.
+    Permite usar SQL real dentro del navegador, sin instalar nada ni
+    levantar un servidor, así que la app abre con doble clic.
+
+    Se carga desde internet a propósito: el navegador no deja leer
+    archivos .wasm locales cuando la página se abre con doble clic
+    (lo bloquea por seguridad), pero sí permite descargarlos de una
+    dirección web. Si la descarga falla, la app cambia sola al modo
+    de respaldo y sigue funcionando exactamente igual.
+  -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"
+    onerror="window.sqlJsNoDisponible = true"
+  ></script>
+  <script src="app.js"></script>
+</body>
+</html>

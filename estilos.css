@@ -1,0 +1,749 @@
+/* =========================================================
+   Mi Racha · hoja de estilos
+   Variables al inicio: cambiar ahí los colores y el estilo.
+   ========================================================= */
+
+/* Los nombres que ya existían se conservan aunque la paleta se hable con nombres
+   de la materia: `--sobre-primario` está documentado en `AVANCES.md` y renombrarlo
+   no cambiaría nada que se vea. */
+:root {
+  /* Superficies. Croma 0-3: los neutros no llevan matiz de color, solo una
+     temperatura fría muy leve para que el violeta no flote sobre ellos. */
+  --fondo: #f2f4f5;
+  --superficie: #ffffff;
+  --superficie-suave: #f6f8f9;
+
+  /* Texto */
+  --texto: #212121;
+  --texto-suave: #626363;
+
+  /* Dos pesos de filete, porque el peso codifica: el de contenido separa del
+     texto, el tenue solo separa. Y sustituyen a la sombra, que era decoración. */
+  --borde: #dadadb;
+  --regla-tenue: #eaeaeb;
+
+  /* El acento: un solo trabajo, decir que esto cuenta. Violeta de tinta, tono 259
+     y croma 84: morado, y sucio. El índigo de la app era tono 243 con croma 159,
+     y volver a él fue una de las vías que el cliente descartó. */
+  --primario: #5a3f93;
+  --primario-fuerte: #483079;
+  --primario-suave: #eee9f7;
+  /* Texto sobre el relleno del botón. Se invierte en el bloque oscuro porque el
+     violeta se aclara allí y el texto claro ya no llegaría a 4,5:1. */
+  --sobre-primario: #f2f4f5;
+
+  /* El éxito deja de ser el acento y pasa a ámbar, el único calor de la app: con
+     violeta, un mensaje de confirmación en violeta se leería como información y
+     no como «hecho», y además le daría al acento un segundo trabajo. */
+  --exito: #855611;
+  --exito-suave: #fbf1e2;
+  --error: #a52a2a;
+  --error-suave: #fbeeee;
+
+  /* El foco es tinta, no un halo de color: el halo de `--primario-suave` no
+     llegaba a 1,5:1 sobre la superficie clara. */
+  --foco: #212121;
+
+  /* La única declaración de `font-family` de la hoja. El nombre de la familia
+     vive también en el `<link>` de `index.html`, y en ningún otro sitio: son las
+     dos menciones que RF-006 permite y las dos que se citan. La pila de reserva
+     es de serifas locales, para que la caída de la fuente cambie poco. */
+  --fuente: 'Faustina', 'Iowan Old Style', 'Palatino Linotype', Palatino,
+            Georgia, 'Times New Roman', serif;
+
+  /* Medida de lectura: por debajo de 80 caracteres. */
+  --medida: 62ch;
+
+  /* Escala tipográfica */
+  --texto-1: 1rem;
+  --texto-0: 0.875rem;
+  --texto-2: 1.125rem;
+  --titulo: clamp(1.75rem, 5vw, 2.5rem);
+  --cifra: clamp(2.75rem, 11vw, 4rem);
+
+  /* Ritmo */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 1rem;
+  --espacio-4: 1.5rem;
+  --espacio-5: 2.5rem;
+
+  /* Formas y medidas */
+  --radio-chico: 6px;
+  --ancho: 64rem;
+  /* Una sola sombra en toda la hoja, y es el único alfa: lo consume el único
+     contenedor truncado. Su RGB lleva el de la tinta nueva. */
+  --sombra: 0 1px 2px rgba(33, 33, 33, 0.06);
+
+  /* Margen de fechas del resumen: ancho FIJO y no cifras tabulares, porque las
+     cifras son una función de la fuente y sin ella el margen se desalinearía. */
+  --margen-dia: 4.25rem;
+
+  /* Variables modo claro (añadidas para RF-002, RF-003, RF-004) */
+  --fondo-claro: #fdf8f5;
+  --tinta-claro: #1e140f;
+  --regla-claro: #e0d8d5;
+  --exito-claro: #f2e8e0;
+  --error-claro: #c45147;
+  --borde-claro: #d0c8c5;
+}
+
+/* El modo oscuro solo redefine variables. Ninguna regla se replica aquí: por eso
+   cambiar un color basta para que cambie en las cuatro pantallas. Y lo que no
+   aparece son las medidas —`--fuente`, `--medida`, la escala, el ritmo,
+   `--radio-chico`, `--ancho` y `--margen-dia`—, porque no cambian con el modo. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #18191b;
+    --superficie: #212121;
+    --superficie-suave: #2a2a2b;
+    --texto: #ebebec;
+    --texto-suave: #aaabab;
+    --borde: #393939;
+    --regla-tenue: #2f2f30;
+    --primario: #b39ae0;
+    --primario-fuerte: #cdb9f2;
+    --primario-suave: #282234;
+    --sobre-primario: #18191b;
+    --exito: #efbf72;
+    --exito-suave: #2f2617;
+    --error: #ff9c9c;
+    --error-suave: #3a1f1f;
+    --foco: #ebebec;
+    --sombra: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --fondo-claro: #fdf8f5;
+    --tinta-claro: #1e140f;
+    --regla-claro: #e0d8d5;
+    --exito-claro: #f2e8e0;
+    --error-claro: #c45147;
+    --borde-claro: #d0c8c5;
+  }
+}
+
+/* Cuando el cuerpo tiene la clase modo-claro, usar valores claros directos.
+   Estas reglas tienen prioridad sobre el @media (prefers-color-scheme: dark)
+   siempre que la clase esté presente en <body>. */
+body.modo-claro {
+  --fondo: #fdf8f5;
+  --superficie: #ffffff;      /* fondo de tarjetas, racha y historial en modo claro */
+  --superficie-suave: #fdf8f5; /* fondo de inputs y cuadros de texto en modo claro */
+  --texto: #1e140f;
+  --borde: #d0c8c5;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --foco: #1e140f;
+  --sobre-primario: #f2e8e0; /* beige cálido para legibilidad en botones */
+  --exito: #f2e8e0;
+  --error: #c45147;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+.oculto {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* La única declaración de `font-family` de la hoja; el nombre de la familia
+     vive también en el `<link>` de `index.html`. Los campos y los botones la
+     heredan por su `font: inherit`, así que aquí no hay una segunda. */
+  font-family: var(--fuente);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--texto);
+  /* El fondo es plano. La veladura radial era decoración y un registro no tiene
+     fuente de luz; sin `background-image` su `background-repeat` no hacía nada,
+     así que también sale. */
+  background-color: var(--fondo);
+  /* Sin `-webkit-font-smoothing: antialiased`: con una serif, adelgazar los
+     trazos cuesta legibilidad, que es lo que no sobra en una app de noche. */
+}
+
+.contenedor {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.pantalla { animation: aparecer 0.25s ease both; }
+.pantalla--centro { min-height: 78vh; display: grid; place-items: center; }
+
+.centro { text-align: center; max-width: 34rem; width: 100%; }
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- Textos ---------- */
+
+/* Ni mayúsculas sostenidas ni espaciado abierto: la marca y los rótulos claros
+   son texto pequeño en grafito. En mayúsculas competían con el titular en vez
+   de identificar la app, y el texto no cambia: sigue siendo el mismo. */
+.marca {
+  margin: 0 0 var(--espacio-3);
+  font-size: var(--texto-0);
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.titulo {
+  margin: 0 0 var(--espacio-2);
+  font-size: var(--titulo);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.subtitulo {
+  margin: 0 0 var(--espacio-5);
+  color: var(--texto-suave);
+  font-size: var(--texto-2);
+  line-height: 1.5;
+}
+
+.rotulo {
+  display: block;
+  margin-bottom: var(--espacio-2);
+  font-size: var(--texto-0);
+  font-weight: 600;
+}
+
+.rotulo--claro {
+  color: var(--texto-suave);
+  font-weight: 500;
+  font-size: var(--texto-0);
+}
+
+.ayuda {
+  margin: var(--espacio-2) 0 0;
+  font-size: var(--texto-0);
+  color: var(--texto-suave);
+}
+
+.pie {
+  margin: var(--espacio-5) 0 0;
+  text-align: center;
+  font-size: var(--texto-0);
+  color: var(--texto-suave);
+}
+
+/* ---------- Tarjetas ---------- */
+
+/* El filete sustituye a la sombra. Una línea de un píxel separa donde hay que
+   separar; la sombra era decoración, y una sombra gris suave bajo cada caja es
+   justo el kit de tarjetas que esta dirección evita. El radio único de antes
+   tampoco: aquí solo vive `--radio-chico`. */
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  padding: var(--espacio-4);
+}
+
+/* El título lleva su propio aire abajo, y por eso `.resumen` ya no necesita un
+   margen negativo para pegarse a él. */
+.tarjeta__titulo {
+  margin: 0 0 var(--espacio-4);
+  font-size: var(--texto-2);
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Cabecera ---------- */
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+/* La frase es lo que escribió la persona, así que lleva el paso de la escala del
+   titular y la medida declarada. El interlineado va más cerrado que el del cuerpo
+   —1,3 frente a 1,55— porque a este tamaño las serifas necesitan menos aire, no
+   más: el aire de más es lo que corresponde al texto de cuerpo. */
+.frase {
+  margin: var(--espacio-2) 0 0;
+  font-size: var(--titulo);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  max-width: var(--medida);
+}
+
+/* ---------- Racha ---------- */
+
+/* La racha es una franja y no un cartel: el número va al principio de la frase que
+   lo acompaña, en la misma línea base, y todo a la izquierda con el resto del
+   tablero. Comparte con `.tarjeta` el filete y la superficie y no añade sombra ni
+   degradado propios: los dos eran veladura, y no contaban nada. El DOM son tres
+   `<p>` hermanos, así que la columna de la derecha se construye con rejilla y no
+   con un contenedor que los envuelva. */
+.racha {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--espacio-3);
+  row-gap: var(--espacio-1);
+  align-items: baseline;
+  justify-items: start;
+  text-align: left;
+  margin-bottom: var(--espacio-4);
+  background: var(--superficie);
+}
+
+/* El número es una cifra y no un indicador, y de ahí salen las tres cosas que lo
+   componen. `--cifra`, el corte más alto de la escala y el único que la hoja
+   reserva para esto, así que no hay nada más grande en ninguna pantalla. Peso 700,
+   el mismo que la fecha de un día del resumen, y no 800: el 800 es el peso del
+   número grande con su etiqueta encima —el cartel que esta pasada quita—, y aquí
+   lo convertiría en el titular de una métrica en vez de en la primera palabra de
+   la frase que lo acompaña. Y el tracking cerrado, que a este tamaño es lo que
+   hace que una cifra se lea como una cifra y no como un titular. Va en el acento
+   porque es lo único que la app calcula: el acento dice «esto cuenta». */
+.racha__numero {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  margin: 0;
+  font-size: var(--cifra);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--primario);
+}
+
+.racha__texto {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  font-size: var(--texto-2);
+  font-weight: 600;
+}
+
+.racha__nota {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+  font-size: var(--texto-0);
+  color: var(--texto-suave);
+}
+
+/* Plana, y su superficie es la de `.racha`: ni fondo distinto ni degradado. La
+   diferencia entre tener racha y no tenerla la marca la cifra —cero o el número de
+   días—, y darle un color distinto le daría al acento un segundo trabajo. Lo único
+   que este estado añade es el filete del canto, igual que en `.mensaje`: al canto
+   porque es donde cabe un filete que solo separa, y en `--regla-tenue` porque no
+   añade peso. No sube a dos píxeles como el de los mensajes: la caja cambiaría de
+   ancho al encender la racha, y aquí todo comparte borde izquierdo. */
+.racha--activa {
+  border-left: 1px solid var(--regla-tenue);
+}
+
+/* ---------- Distribución en dos columnas ---------- */
+
+.tablero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 860px) {
+  .tablero { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); }
+}
+
+/* ---------- Formularios ---------- */
+
+.campo { margin-bottom: 1.15rem; }
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+textarea,
+/* El selector entra en el grupo porque no hereda nada de los campos: sin regla
+   propia se quedaba sin fondo, sin borde y sin anillo de foco. */
+select {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  /* 16px evita que el móvil haga zoom al escribir */
+  font-size: 1rem;
+  color: var(--texto);
+  background: var(--superficie-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  /* Sin la mitad de `box-shadow`: la dejó sin nada que animar el anillo de tinta. */
+  transition: border-color 0.15s ease;
+}
+
+textarea { resize: vertical; min-height: 3rem; }
+
+/* Un solo anillo para todo lo que se opera con el teclado, en un solo grupo y
+   por enumeración explícita: campos, selector, botones y el enlace de eliminar.
+   Es tinta y no un halo de color porque el halo de `--primario-suave` no llegaba
+   a 1,5:1 sobre la superficie clara y no se veía. `--foco` se invierte en el
+   bloque oscuro, así que el modo oscuro se adapta sin replicar nada allí. El
+   borde deja de cambiar de color al enfocar: el anillo es la única señal, y el
+   acento no gana un segundo trabajo. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.boton:focus-visible,
+.boton-borrar:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  width: 100%;
+  padding: var(--espacio-3) var(--espacio-4);
+  font: inherit;
+  font-weight: 600;
+  color: var(--sobre-primario);
+  background: var(--primario);
+  border: 1px solid transparent;
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+  /* Solo de color y de posición: el puntero no cambia el tamaño de la caja ni le
+     dibuja una sombra, porque nada de eso aportaría información aquí. */
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.boton:hover { background: var(--primario-fuerte); }
+.boton:active { transform: translateY(1px); }
+
+.boton--grande {
+  width: auto;
+  min-width: 14rem;
+  padding: var(--espacio-3) var(--espacio-4);
+  font-size: var(--texto-2);
+}
+
+/* Navegación y no acción, y por eso sin relleno: la píldora rellena con el violeta
+   claro era indistinguible de los botones de acción, y lo que separa a unos de
+   otros es el relleno, no el tamaño. El filete lo delata: los tres que comparten
+   esta clase —cambiar frase, ver resúmenes y volver al tablero— se ven iguales
+   entre sí y distintos de «Iniciar sesión», «Listo» y «Guardar sesión». */
+.boton--suave {
+  width: auto;
+  color: var(--texto);
+  background: none;
+  border-color: var(--borde);
+  font-size: var(--texto-0);
+  font-weight: 600;
+  padding: var(--espacio-2) var(--espacio-3);
+}
+
+/* El puntero oscurece el filete y no rellena nada: `background` se anula porque
+   `.boton:hover` pinta el violeta fuerte y esta clase va después, así que gana. */
+.boton--suave:hover {
+  background: none;
+  border-color: var(--texto-suave);
+  color: var(--texto);
+}
+
+.mensaje {
+  margin: 0.9rem 0 0;
+  padding: 0.7rem 0.9rem;
+  /* El filete del canto es lo que dice qué pasó; el fondo tenue solo lo sostiene.
+     Con el borde de todo el alrededor volvería a ser una caja. */
+  border-left: 2px solid var(--exito);
+  border-radius: var(--radio-chico);
+  font-size: 0.9rem;
+  background: var(--exito-suave);
+  color: var(--exito);
+}
+
+.mensaje--error {
+  border-left-color: var(--error);
+  background: var(--error-suave);
+  color: var(--error);
+}
+
+/* ---------- Lista de sesiones ---------- */
+
+/* Sin margen negativo: aquel valor solo existía para pegarse al título de la
+   tarjeta y compensarlo. Ahora el título lleva su propio aire abajo y el
+   acoplamiento desaparece con él. */
+.resumen {
+  margin: 0 0 var(--espacio-4);
+  font-size: var(--texto-0);
+  color: var(--texto-suave);
+}
+
+/* La única sombra de la hoja, y no es decoración: este es el único contenedor
+   truncado, con `max-height` y `overflow-y`, así que la sombra es lo que dice que
+   la lista sigue más abajo. En cualquier otro sitio la sombra era una capa gris
+   repetida bajo cada caja, que es justo lo que el filete sustituye.
+
+   El filete va en el registro y no en el botón de debajo porque solo aquí puede
+   ir a lo ancho. Puesto sobre un botón `inline-flex` de ancho automático mide lo
+   que mida el texto —unos 130 px— y se lee como un guion suelto; puesto al
+   final de la columna ocupa todo el ancho y significa algo más cierto: aquí
+   acaba el registro. Además el botón repetía el mismo dispositivo que marca cada
+   día, que es lo que hacía que «Ver resúmenes…» se leyera como el último ítem del
+   listado. El aire de `--espacio-5` pasa al margen de la lista, que es de donde
+   venía, para que la distancia al botón no cambie.
+
+   El filete se dibuja en el borde de la caja y no al final del contenido
+   desplazado, y eso es justo lo que se quiere: la línea se queda quieta
+   marcando dónde acaba la columna mientras las sesiones pasan por debajo. Con la
+   lista vacía —que no se oculta nunca, solo se vacía— el filete sigue cruzando
+   la tarjeta y `.vacio` queda dentro del registro en vez de fuera. */
+.sesiones {
+  list-style: none;
+  margin: 0 0 var(--espacio-5);
+  padding: 0 0 var(--espacio-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 32rem;
+  overflow-y: auto;
+  box-shadow: var(--sombra);
+  border-bottom: 1px solid var(--borde);
+}
+
+.sesion {
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  padding: 0.9rem 1rem;
+  background: var(--superficie-suave);
+}
+
+.sesion--nueva {
+  border-color: var(--primario);
+  animation: resaltar 1.4s ease;
+}
+
+@keyframes resaltar {
+  0%   { background: var(--primario-suave); }
+  100% { background: var(--superficie-suave); }
+}
+
+.sesion__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sesion__fecha { font-weight: 600; }
+
+.sesion__minutos {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primario);
+  white-space: nowrap;
+}
+
+/* El texto que escribió la persona: más cuerpo, la medida declarada y más
+   interlineado que el resto de la hoja, porque los trazos de una serif con
+   líneas apretadas se leen peor que los de una letra sin serifas. */
+.sesion__frase {
+  margin: var(--espacio-2) 0 0;
+  font-size: var(--texto-1);
+  line-height: 1.65;
+  font-style: italic;
+  color: var(--texto-suave);
+  max-width: var(--medida);
+}
+
+.sesion__avances {
+  margin: var(--espacio-2) 0 0;
+  font-size: var(--texto-1);
+  line-height: 1.7;
+  max-width: var(--medida);
+  /* `pre-wrap` y `overflow-wrap: anywhere` no se tocan: son los que conservan los
+     saltos de línea del texto de la persona y los que hacen que una palabra larga
+     envuelva en vez de cortarse. Sin ellos los avances dejarían de ser íntegros. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sesion__vacio { color: var(--texto-suave); font-style: italic; }
+
+.boton-borrar {
+  border: 0;
+  background: none;
+  padding: 0.2rem;
+  margin-top: 0.6rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.boton-borrar:hover { color: var(--error); }
+
+/* Párrafo y no caja. El borde discontinuo de antes dibujaba un contenedor vacío
+   alrededor de un texto que no está vacío; un filete arriba basta para decir que
+   aquí va a aparecer la lista. Sin caja ya no hay `padding` que lo separe del
+   botón de abajo, así que el aire de debajo va en el margen. */
+.vacio {
+  margin: 0 0 var(--espacio-3);
+  padding: var(--espacio-3) 0 0;
+  text-align: left;
+  color: var(--texto-suave);
+  font-size: var(--texto-0);
+  border-top: 1px solid var(--regla-tenue);
+}
+
+/* ---------- Resumen semanal ---------- */
+
+/* Sigue siendo una regla por `id` —el historial sigue usando `.resumen` y los dos
+   bloques no son lo mismo—, pero su trabajo ha cambiado: el total de la semana es
+   el titular de esta pantalla, dice cuánto se ha reportado en total, así que va en
+   tinta y con el corte de titular y no como la nota de una tarjeta. El aire de
+   abajo separa la cabecera de la columna de días; ya no hay ningún margen
+   negativo que compensar. */
+#resumen-semanal {
+  margin: 0 0 var(--espacio-4);
+  font-size: var(--texto-2);
+  color: var(--texto);
+}
+
+/* La etiqueta del selector nombra el control y no lo anuncia: texto tranquilo en
+   grafito, sin mayúsculas sostenidas y sin espaciado abierto. */
+label[for="selector-semana"] {
+  color: var(--texto-suave);
+}
+
+/* El selector es el identificador del periodo, no un campo más: deja de estirarse
+   a todo el ancho como los `input` y se ajusta a su contenido, con un mínimo
+   legible para que un rango corto no lo deje estrecho. El borde se refuerza para
+   que se lea como un control y no como un párrafo. Se queda en `1rem` y con su
+   anillo de foco, y la flecha nativa se deja como está: dibujarla sería añadir
+   reglas para reemplazar algo que el navegador ya dibuja bien. */
+#selector-semana {
+  width: auto;
+  min-width: 14rem;
+  border-color: var(--texto-suave);
+}
+
+/* La columna de la semana: ni fondo ni caja. El filete de cada día lo pone `.dia`,
+   así que la lista no necesita separaciones propias. El de cierre sí, y es el
+   mismo que cierra el historial: va al final del registro y no sobre el botón,
+   por lo mismo que allí —solo aquí la línea puede ir a lo ancho de la columna—. El
+   aire de `--espacio-5` vive en el margen de la lista, de donde venía cuando lo
+   llevaba el botón, así que la distancia entre la regla y «Volver al tablero» es
+   la de siempre. */
+.dias {
+  list-style: none;
+  margin: 0 0 var(--espacio-5);
+  padding: 0 0 var(--espacio-3);
+  border-bottom: 1px solid var(--borde);
+}
+
+/* El día es una línea, no una caja. Una caja añadiría un contenedor vacío alrededor
+   de algo que ya es una unidad por sí mismo, y con ella volvería el kit de
+   tarjetas. Lo que separa son los filetes: cada día cierra el anterior y abre el
+   suyo, y el aire de `--espacio-3` es lo que queda entre la regla y su fecha. */
+.dia {
+  border: 0;
+  border-top: 1px solid var(--borde);
+  padding: var(--espacio-3) 0 0;
+}
+
+/* El primer día no filetea: no separa de nada, solo abre la columna, y el aire le
+   da el titular de arriba. */
+.dia:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dia__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* La fecha va en un margen de ancho FIJO, y no con cifras tabulares: las cifras
+   son una función de la fuente, así que sin ella el margen se desalinearía solo.
+   Fijo alinea igual con la familia puesta y con la pila de reserva. */
+.dia__fecha {
+  flex: 0 0 var(--margen-dia);
+  text-align: left;
+  font-weight: 700;
+}
+
+.dia__minutos {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primario);
+  white-space: nowrap;
+}
+
+/* Las sesiones cuelgan del día y no son un bloque: el margen de fechas del día es
+   su sangría y el filete lateral dice de quién es cada una sin escribir el nombre
+   del día otra vez. Sin caja, porque una caja por fila devolvía el resumen al kit
+   de tarjetas y lo hacía indistinguible del historial. */
+.dia__sesiones {
+  list-style: none;
+  margin: var(--espacio-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+/* Se escribe después de `.sesion` a propósito, y además gana por especificidad.
+   Las dos listas pintan la misma clase, así que sin acotar la regla a la del
+   resumen el historial se quedaría sin su bloque: por eso aquí se quitan caja,
+   fondo y radio, y por eso el historial no se ha tocado. */
+.dia__sesiones .sesion {
+  margin-left: var(--margen-dia);
+  padding: 0 0 0 var(--espacio-3);
+  border: 0;
+  border-left: 1px solid var(--borde);
+  border-radius: 0;
+  background: none;
+}
+
+/* El acento dice que esto cuenta, y en esta pantalla lo que cuenta es el total del
+   día, que ya va en el canto de su fila. Poner cada sesión en violeta haría que
+   siete filas dejaran de señalar nada, así que aquí los minutos se apagan a
+   grafito y se quedan al margen derecho del día. */
+.dia__sesiones .sesion__minutos {
+  margin-left: auto;
+  color: var(--texto-suave);
+}
+
+/* El encabezado de la pantalla es el único elemento que recibe foco sin que nadie
+   lo haya pedido con el teclado: lleva `tabindex="-1"`, así que el Tab nunca pasa
+   por ahí, y el único foco que recibe es el programático de `abrirResumenSemanal`,
+   que existe para anunciar la pantalla a un lector de pantalla. No es un control,
+   no se opera, y por eso su anillo no informaría de nada: el rectángulo que
+   dibujaba el navegador al entrar al resumen era ruido que el usuario veía cada
+   vez que abría la pantalla. Quitarlo no deja a nadie sin pista, porque el Tab
+   nunca pasa por aquí. El anillo del grupo de foco sí lo llevan los elementos en
+   los que sí es información. */
+#encabezado-resumen-semanal:focus { outline: none; }
+
+@media (max-width: 480px) {
+  .contenedor { padding: 1.5rem 0.85rem 2.5rem; }
+  .tarjeta { padding: 1.15rem; }
+  .boton--grande { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
