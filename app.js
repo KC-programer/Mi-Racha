@@ -647,6 +647,7 @@ function pintarRacha(sesiones) {
 
 /* Dibuja el historial de sesiones. */
 function pintarHistorial(sesiones) {
+  sesiones = BaseDeDatos.listar().slice(0, 5);
   const lista = document.getElementById('lista-sesiones');
   const vacia = document.getElementById('lista-vacia');
   const resumen = document.getElementById('resumen');

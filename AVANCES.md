@@ -9,6 +9,11 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
 - **Hoy hay cuatro pantallas.** La cuarta, el resumen semanal, se entra desde la
   tarjeta de historial y vuelve al tablero sin repintarlo, para que sobrevivan el
   scroll del listado y los valores del formulario.
+- **El historial muestra solo las 5 sesiones más recientes.** Se limita a 5 en la
+  visualización del tablero (`app.js:650`) usando `.slice(0, 5)` sobre
+  `BaseDeDatos.listar()`, que sigue trayendo todas las sesiones para racha y
+  resumen semanal. Las sesiones más antiguas se conservan guardadas pero no aparecen
+  en el listado principal.
 - **El resumen semanal se filtra en el cliente** sobre `BaseDeDatos.listar()`: sin
   consulta nueva, sin método nuevo en `BaseDeDatos` y sin clave nueva en
   `localStorage`, así que los modos degradados no se tocan. La semana elegida es
