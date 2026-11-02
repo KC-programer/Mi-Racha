@@ -8,10 +8,15 @@
 
 ## 🚀 Inicio Rápido
 
-Para comenzar a utilizar la aplicación:
+* Para usuarios desde computadora:
+
 1. Clona o descarga este repositorio.
 2. Abre el archivo `index.html` en tu navegador web preferido.
 
+* Para usuarios desde teléfono o tablet:
+
+Abrir desde el siguiente enlace: https://kc-programer.github.io/Mi-Racha/
+Nota: Se necesita conexión a internet al abrirlo por primera vez, a partir de ahí la app se puede usar con o sin conexión.
 ---
 
 ## 🛠️ Detalles Técnicos
