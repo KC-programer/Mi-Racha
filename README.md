@@ -15,8 +15,12 @@
 
 * Para usuarios desde teléfono o tablet:
 
-Abrir desde el siguiente enlace: https://kc-programer.github.io/Mi-Racha/
-Nota: Se necesita conexión a internet al abrirlo por primera vez, a partir de ahí la app se puede usar con o sin conexión.
+1. Abrir desde el siguiente enlace: https://kc-programer.github.io/Mi-Racha/
+(**Nota:** Se necesita conexión a internet al abrirlo por primera vez, a partir de ahí la app se puede usar con o sin conexión.)
+
+#### Advertencia⚠️: 
+En el móvil **no** sirve descargar el ZIP y abrir `index.html`: Android lo abre aislado, sin `estilos.css` ni `app.js` al lado, así que la página sale sin estilos y sin funcionar. En el teléfono, siempre la URL indicada.
+
 ---
 
 ## 🛠️ Detalles Técnicos
