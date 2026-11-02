@@ -817,13 +817,13 @@ function conectarEventos() {
     // 5. Actualizar el pie #pie-modo para reflejar el modo actual
     const pie = document.getElementById('pie-modo');
     const modoSQL = BaseDeDatos.modo;  // 'sql' o 'respaldo'
-    const sqlModoTexto = modoSQL === 'sql' ? 'SQL (SQLITE)' : 'respaldo';
+    const sqlModoTexto = modoSQL === 'sql' ? 'SQL (SQLite)' : 'respaldo';
 
     if (modoActual) {
       if (modoSQL === 'respaldo') {
         pie.textContent = 'Modo: Claro. Base de datos: respaldo.';
       } else {
-        pie.textContent = 'Modo: Claro. Base de datos: SQL (SQLITE)';
+        pie.textContent = 'Modo: Claro. Base de datos: SQL (SQLite)';
       }
     } else {
       pie.textContent = 'Base de datos: ' + sqlModoTexto;
@@ -936,7 +936,7 @@ async function iniciar() {
   const body = document.body;
   const pie = document.getElementById('pie-modo');
   const modoSQL = BaseDeDatos.modo;  // 'sql' o 'respaldo'
-  const sqlModoTexto = modoSQL === 'sql' ? 'SQL (SQLITE)' : 'respaldo';
+  const sqlModoTexto = modoSQL === 'sql' ? 'SQL (SQLite)' : 'respaldo';
 
   let modoClaro = false;
   let esModoMemoria = false;
@@ -975,7 +975,7 @@ async function iniciar() {
       pie.textContent = 'Modo: Claro. Base de datos: respaldo.';
     } else if (modoGuardado === 'claro') {
       // Estado (b): Modo claro guardado en localStorage
-      pie.textContent = 'Modo: Claro. Base de datos: SQL (SQLITE)';
+      pie.textContent = 'Modo: Claro. Base de datos: SQL (SQLite)';
     } else if (esModoMemoria) {
       // Estado (d): Modo claro degradado sin localStorage
       pie.textContent = 'Modo: Claro (memoria)';

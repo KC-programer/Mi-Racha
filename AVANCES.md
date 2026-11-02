@@ -9,15 +9,19 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
 - **Hoy hay cuatro pantallas.** La cuarta, el resumen semanal, se entra desde la
   tarjeta de historial y vuelve al tablero sin repintarlo, para que sobrevivan el
   scroll del listado y los valores del formulario.
-- **El historial muestra solo las 5 sesiones más recientes.** Se limita a 5 en la
-  visualización del tablero (`app.js:650`) usando `.slice(0, 5)` sobre
-  `BaseDeDatos.listar()`, que sigue trayendo todas las sesiones para racha y
-  resumen semanal. Las sesiones más antiguas se conservan guardadas pero no aparecen
-  en el listado principal.
+- **El historial muestra solo las 5 sesiones más recientes.** Se limita a 5 en
+  `pintarHistorial` usando `.slice(0, 5)` sobre `BaseDeDatos.listar()`, que sigue
+  trayendo todas las sesiones para racha y resumen semanal. Las sesiones más
+  antiguas se conservan guardadas pero no aparecen en el listado principal.
 - **El resumen semanal se filtra en el cliente** sobre `BaseDeDatos.listar()`: sin
   consulta nueva, sin método nuevo en `BaseDeDatos` y sin clave nueva en
   `localStorage`, así que los modos degradados no se tocan. La semana elegida es
   estado en memoria: al reabrir, la última semana cerrada con actividad.
+- **Está publicada en GitHub Pages:** <https://kc-programer.github.io/Mi-Racha/>.
+  Se abre con doble clic en el ordenador o con esa URL en el móvil.
+- **El estado vive en el `localStorage` de cada navegador y cada origen.** Lo
+  guardado en el móvil no aparece en el ordenador ni al revés, y lo guardado
+  desde `file://` no se hereda al publicar: son almacenes distintos.
 
 ## Decisiones y sus razones
 
@@ -45,10 +49,7 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
   resumen semanal, que responde a qué se reportó en total la última semana cerrada,
   una pregunta que el tablero no puede responder sin mezclar la vista diaria con la
   agregación semanal. La frase dejó de ser una excepción y pasó a ser la regla.
-
-## Decisiones y sus razones (continuación)
-
-- **D5 · Principio 2 de la constitution:** se reescribe para que ya no afirme que la única red es `sql.js`; ahora nombra la tipografía como segunda descarga y dice que ninguna de las dos transporta un dato. Se justifica porque la fuente es realce visual, no camino de datos; un aviso que no se pueda detectar sería una mentira. Se anota el antes y el después en `specs/002-pasada-visual/spec.md` y aquí.
+- **D5 · Principio 2 de la constitution:** se reescribe para que ya no afirme que la única red es `sql.js`; ahora nombra la tipografía como segunda descarga y dice que ninguna de las dos transporta un dato. Se justifica porque la fuente es realce visual, no camino de datos; un aviso que no se pueda detectar sería una mentira. Se anota el antes y el después en `specs/002-pasada-visual/spec.md` y aquí.
 - **D6 · Minutos duplicados en el resumen:** excepción al RF‑009 de la spec 001. Si una sola sesión en el día → se muestra solo el total; si hay dos o más sesiones → total + cada sesión muestra su tiempo. Se registra porque rompe un RF de una spec anterior, pero se paga a cambio de quitar redundancia visible. Queda registrado en `specs/002-pasada-visual/spec.md` y aquí, con el coste de excepción a un RF validado.
 
 ## Aprendizajes y errores a evitar
@@ -61,7 +62,9 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
 
 ## Próximos pasos
 
-- **Validación T8 finalizada (APTO):** modo claro implementado.
 - **T9:** Manual de verificación en navegador — al carecer el proyecto de test runner automatizado, la única verificación real es abrir `index.html` y recorrer las 4 pantallas, probar el camino feliz y errores, desconectar internet para verificar modo degradado, guardar sesiones y confirmar persistencia de racha y modo.
 - **T10:** Consideraciones de compatibilidad y degradados — la app debe funcionar en los tres escenarios degradados (sin `sql.js`, sin `localStorage`, fallo arranque SQLite). El modo claro se mantiene mediante variables CSS locales y el pie avisa siempre del modo en uso. No se añaden build, `package.json` ni pasos de compilación.
-- **Publicación en producción: aplazada.** No se sube nada hasta que las pruebas manuales salgan bien. Cuando llegue, hay que decidir antes qué se promete: la app es íntegramente cliente y cada usuario guarda los datos en su propio `localStorage`, así que no hay cuentas ni sincronización entre dispositivos, y no todo se traduce en "sube el HTML a un host".
+- **La app falla en silencio si el arranque no termina:** en `iniciar()` el pie, el resumen y `conectarEventos()` van después de `await BaseDeDatos.iniciar()`; si el JS no carga, el CDN de `sql.js` se cuelga
+  o el `.wasm` no llega, quedan un botón muerto y un pie vacío, y el `<noscript>` solo cubre JavaScript desactivado. Aplazado a la próxima.
+- **`BaseDeDatos.nombreModo()` no se llama desde ningún sitio** y devuelve `'modo de respaldo'`, que no es el texto que usa el pie: decidir si se borra o se usa de verdad (ver trampa 10 de `AGENTS.md`).
+- **`pintarHistorial` ignora su parámetro** y vuelve a llamar a `BaseDeDatos.listar()`; el resumen mezcla el recuento recortado (máximo 5) con los minutos de todas las sesiones, y puede leerse como "5 sesiones, 40 h" con muchas más guardadas. Decidir cuál es el texto correcto.

@@ -13,7 +13,7 @@ DOM— está **en español**.
 ## Stack y estructura
 
 **Stack.** Sin frameworks, sin librería de UI, sin módulos ES, sin bundler, sin
-transpiler, sin package manager, sin linter, sin formateador, sin tests, sin Git.
+transpiler, sin package manager, sin linter, sin formateador, sin tests.
 
 | Elemento | Estado |
 |---|---|
@@ -23,10 +23,10 @@ transpiler, sin package manager, sin linter, sin formateador, sin tests, sin Git
 | Bundler / transpiler / package manager | Ninguno |
 | Tests automatizados | Ninguno |
 | Linter / formateador | Ninguno |
-| Git | No inicializado |
+| Git | Repositorio en GitHub, rama `main`; Pages publica desde ahí |
 | Idioma | Español |
 
-**Archivos.** Tres de código y tres de documentación. El proyecto es
+**Archivos.** Tres de código y cuatro de documentación. El proyecto es
 deliberadamente plano:
 
 ```
@@ -36,22 +36,28 @@ Proyecto/
 ├── estilos.css  # variables CSS + estilos, modo oscuro incluido
 ├── AGENTS.md    # este archivo: cómo se trabaja aquí
 ├── AVANCES.md   # estado, decisiones, aprendizajes y próximos pasos
+├── README.md    # presentación del repositorio
 └── docs/
     └── constitution.md  # principios innegociables (ver Reglas)
 ```
 
 No crees una carpeta `src/`, `js/`, `css/` ni cualquier estructura nueva sin una
-razón muy buena. Los tres `.md` (`AGENTS.md`, `AVANCES.md`,
+razón muy buena. Los cuatro `.md` (`AGENTS.md`, `AVANCES.md`, `README.md`,
 `docs/constitution.md`) son documentación: no se tocan como parte de un cambio
 de código (salvo que el cambio obligue, y entonces `AVANCES.md` es el que se
 actualiza).
 
 ## Comandos
 
-No hay build, ni instalación, ni servidor obligatorio. La app se abre con doble
-clic en `index.html`; eso es todo.
+No hay build, ni instalación, ni servidor obligatorio. La app se abre de dos
+formas, según el dispositivo:
 
-- **Ejecutar**: `start index.html` (Windows) o doble clic en el archivo.
+- **Ejecutar en el ordenador**: `start index.html` (Windows) o doble clic en el
+  archivo.
+- **Ejecutar en el teléfono**: abre la URL publicada,
+  <https://kc-programer.github.io/Mi-Racha/>. El archivo local no vale en el
+  móvil: sin `estilos.css` ni `app.js` al lado, la página se queda sin estilos y
+  sin lógica (ver trampa 8).
 - **Depurar con servidor local** (opcional, no es un requisito):
   `python -m http.server 8000` y abre `http://localhost:8000`. Cualquier otro
   sirve (`npx serve`, extensión Live Server).
@@ -65,10 +71,14 @@ Cualquier dependencia que exija un paso de compilación, un servidor o un
 librería, comprueba que se pueda cargar con un `<script>` desde un CDN y que la
 app siga funcionando si la descarga falla.
 
+Publicar en GitHub Pages no es una excepción a esa regla: sirve los mismos tres
+archivos estáticos por https, sin build ni paso previo. Solo cambia de dónde se
+descargan y añade una URL para el móvil.
+
 ## Convenciones
 
 **Idioma.** Español en todo: código, identificadores, comentarios, textos de
-interfaz, `id` del DOM y los dos `.md`.
+interfaz, `id` del DOM y los cuatro `.md`.
 
 **JavaScript.**
 
@@ -212,6 +222,19 @@ en modo SQL, la app está rota sin internet.
 7. **`ESQUEMA_SQL` no admite comentarios dentro**: es un array de cadenas unido
    con `join`, así que un `//` pasaría a formar parte del SQL y lo rompería. El
    comentario va encima del bloque, nunca dentro.
+8. **`file://` no funciona en el móvil.** Android abre el `.html` aislado, sin
+   `estilos.css` ni `app.js` al lado: se ve el HTML sin estilos y sin lógica.
+   Además, en `file://` el origen es opaco, así que `localStorage` falla y el
+   `.wasm` de `sql.js` no se carga. En el teléfono, siempre la URL publicada.
+9. **GitHub Pages sirve la app en una subcarpeta y desde Linux.** Las rutas a
+   archivos deben ser relativas (`estilos.css`, no `/estilos.css`) y los nombres
+   distinguen mayúsculas: `Estilos.css` funciona en Windows y da 404 en
+   producción.
+10. **El texto del pie se arma a mano en dos sitios**: `iniciar()` y el manejador
+    de `#boton-modo-claro`. `BaseDeDatos.nombreModo()` existe, pero no se usa.
+    Como cada ruta escribe su propia cadena, un cambio hecho en un solo sitio
+    deja el pie diciendo dos cosas distintas según se llegue a él; toca los dos
+    o no cambies ninguno. La spec 003 lo fija literal, hasta el punto final.
 
 ## Forma de trabajar
 
@@ -316,7 +339,9 @@ recorre la checklist:
 - [ ] Abre `index.html` en el navegador y recorre las 4 pantallas.
 - [ ] Prueba el camino feliz y los errores: frase vacía, minutos `0`, minutos no
       numérico, sin fecha, fecha futura.
-- [ ] Comprueba el pie: debería decir `Base de datos: SQL (SQLite).`
+- [ ] Comprueba el pie: debería decir `Base de datos: SQL (SQLite)`
+- [ ] Abre la URL publicada en el móvil y comprueba que el pie dice
+      `Base de datos: SQL (SQLite)` (y no `respaldo`).
 - [ ] **Desconecta internet y recarga**: la app debe arrancar igual en modo de
       respaldo y guardar/eliminar sesiones con normalidad.
 - [ ] Guarda una sesión, recarga y confirma que la racha y el historial persisten.
