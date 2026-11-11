@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mi Racha · Control de estudio diario</title>
-  <meta name="description" content="Registra lo que estudias cada día y mantén viva tu racha." />
+  <title>Mi Racha · Control de avances diario</title>
+  <meta name="description" content="Registra lo que progresas en tus estudios o trabajos cada día y mantén viva tu racha." />
 
   <!--
     La única familia tipográfica de la app, desde CDN. Su nombre vive también en
@@ -29,13 +29,18 @@
   <div class="contenedor">
 
     <!-- ============ PANTALLA 1 · INICIO ============ -->
+    <!-- 
+    Esta es la pantalla que el usuario ve al abrir la app por primera vez. Esta pantalla no aparece de nuevo luego de su aparación, excepto si el usuario borra todos los datos de la app.
+    -->
+
     <section class="pantalla pantalla--centro" id="pantalla-inicio">
       <div class="centro">
         <p class="marca">Mi Racha</p>
         <h1 class="titulo">¿Listo para empezar?</h1>
         <p class="subtitulo">
-          Registra lo que estudias cada día y mantén viva tu racha.
+          Registra lo que progresas cada día y mantén viva tu racha.
         </p>
+        <!-- Botón para iniciar sesión y continuar a la siguiente pantalla -->
         <button type="button" class="boton boton--grande" id="boton-iniciar-sesion">
           Iniciar sesión
         </button>
@@ -44,12 +49,16 @@
     </section>
 
     <!-- ============ PANTALLA 2 · INTENCIÓN ============ -->
+    <!-- 
+    Esta sección aparece por primera vez luego de presionar el botón "Iniciar sesión" en la pantalla de Inicio, y para acceder a ella de nuevose debe presionar el botón "Cambiar frase" en la "Pantalla 3: Tablero".
+    La idea es que el usuario pueda tener una intensión presente todos los días, ya sea que desee mantener la misma durante varios días o que desee cambiarla luego de cierto tiempo. Por ello, la pantalla se oculta luego de su primera aparición y aparece nuevamente por acción del usuario.
+    -->
     <section class="pantalla pantalla--centro" id="pantalla-intencion" hidden>
       <div class="centro">
         <p class="marca">Paso 1 de 2</p>
         <h1 class="titulo">¿Cuál es tu intención de hoy?</h1>
         <p class="subtitulo">
-          Escribe una frase para recordar por qué te pones a estudiar hoy.
+          Escribe una frase para recordar por qué te pones a trabajar hoy.
         </p>
         <form id="formulario-frase" novalidate>
           <label class="rotulo" for="frase">Mi frase de hoy</label>
@@ -68,8 +77,12 @@
     </section>
 
     <!-- ============ PANTALLA 3 · TABLERO ============ -->
+    <!-- 
+    Esta pantalla es la pantalla principal de la app, y es la que ve el usuario siempre que abre la app luego de haber ingresado por primera vez. 
+    En esta pantalla se encuentra la frase que el usuario ingresó en la "Pantalla 2: Intención", el botón para cambiar la frase y el botón para cambiar al modo claro. Por debajo de ello, esta el contador de Racha, que señala cuantos días seguidos se ha registrado una sesión. Y debajo de ello se encuentra del lado izquierdo el formulario para registrar los avances del día con sus datos (fecha, minutos estudiados y la descripción de lo que se ha avanzado); y del lado derecho el hsitorial reciente de las sesiones guardadas, así como el botón para acceder a la lista de resúmenes guardados. 
+    -->
     <section class="pantalla" id="pantalla-tablero" hidden>
-
+      <!-- Bloque que contiene la frase ingresada por el usuario, el botón para cambiar de frase y el botón para cambiar al modo claro -->
       <header class="cabecera">
         <div class="cabecera__texto">
           <p class="rotulo rotulo--claro">Tu frase</p>
@@ -82,7 +95,7 @@
           <span class="oculto">Modo claro</span>
         </button>
       </header>
-
+      <!-- Bloque que contiene y muestra la racha actual -->
       <section class="tarjeta racha" aria-labelledby="titulo-racha">
         <h2 class="oculto" id="titulo-racha">Racha actual</h2>
         <p class="racha__numero" id="racha-dias">0</p>
@@ -91,18 +104,17 @@
       </section>
 
       <div class="tablero">
-
         <!-- Formulario para registrar el avance del día -->
         <section class="tarjeta" aria-labelledby="titulo-nueva">
           <h2 class="tarjeta__titulo" id="titulo-nueva">Nueva sesión</h2>
-
+          <!-- Campo para indicar la fecha del registro -->
           <form id="formulario-sesion" novalidate>
             <div class="campo">
               <label class="rotulo" for="fecha">Fecha</label>
               <input type="date" id="fecha" name="fecha" required />
               <p class="ayuda">Puedes registrar días anteriores. No se permiten fechas futuras.</p>
             </div>
-
+            <!-- Campo (con bloque de escritura) para indicar la cantidad de minutos estudiados -->
             <div class="campo">
               <label class="rotulo" for="minutos">Minutos estudiados</label>
               <input
@@ -116,7 +128,7 @@
                 required
               />
             </div>
-
+            <!-- Bloque de escritura para indicar los avances del día -->
             <div class="campo">
               <label class="rotulo" for="avances">Avances del día</label>
               <textarea
@@ -126,7 +138,7 @@
                 placeholder="¿Qué aprendiste o terminaste hoy?"
               ></textarea>
             </div>
-
+            <!-- Botón de guardar sesión -->
             <button type="submit" class="boton">Guardar sesión</button>
             <p class="mensaje" id="mensaje-formulario" role="status" aria-live="polite" hidden></p>
           </form>
@@ -151,16 +163,15 @@
     <!-- ============ PANTALLA 4 · RESUMEN SEMANAL ============ -->
     <!-- El orden de los bloques es el de RF-011: encabezado, selector,
          cabecera, lista de días y vuelta. Nace oculta y todavía sin
-         listeners; por eso la sección está ya en 'Pantallas'. -->
+         listeners; por eso la sección está ya en 'Pantallas'.
+         La idea de esta pantalla es alamacenar todas las sesiones registaradas por el ussurio a lo largo de su tiempo de uso de la aplicación, quitandole esa carga al bloque de "Historial de sesiones" de la "Pantalla 3: Tablero". Las sesiones estan almacenadas en un listado por semanas, mostrando los datos de aquellas sesiones guardadas en esa semana; sea en distintos días, varias en un mismo día o una combinación de ambas-->
     <section class="pantalla" id="pantalla-resumen-semanal" hidden aria-labelledby="encabezado-resumen-semanal">
       <h1 class="titulo" id="encabezado-resumen-semanal" tabindex="-1">Resumen semanal</h1>
-
       <label class="rotulo" for="selector-semana">Semana</label>
       <select id="selector-semana"></select>
-
       <p class="resumen" id="resumen-semanal"></p>
       <ol class="dias" id="lista-dias"></ol>
-
+      <!-- Botón para regresar a "Pantalla 3: Tablero" -->
       <button type="button" class="boton boton--suave" id="boton-volver-tablero">
         Volver al tablero
       </button>
