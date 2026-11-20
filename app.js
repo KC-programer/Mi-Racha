@@ -21,7 +21,10 @@
 const Claves = {
   sesiones: 'miRacha:sesiones',
   frase: 'miRacha:frase',
-  modo: 'miRacha:modo'
+  modo: 'miRacha:modo',
+  // Día local en que se mostró Inicio: sirve para saludar una vez al día sin
+  // convertirlo en una preferencia ni en un dato de las sesiones.
+  ultimoInicio: 'miRacha:ultimo-inicio'
 };
 
 const Almacen = (function () {
@@ -800,11 +803,17 @@ function prepararFormularioSesion() {
 
 function conectarEventos() {
 
-  // Pantalla 1 -> 2
+  // El saludo diario no vuelve a pedir la frase: el tablero ya la tiene. El
+  // estreno sí la pide, para que nadie llegue a un tablero que diga «Sin frase».
   document.getElementById('boton-iniciar-sesion').addEventListener('click', function () {
+    const frase = Almacen.leer(Claves.frase, '');
+    if (frase) {
+      abrirTablero();
+      return;
+    }
     mostrarPantalla('intencion');
     const campo = document.getElementById('frase');
-    campo.value = Almacen.leer(Claves.frase, '');
+    campo.value = frase;
     mostrarMensaje(document.getElementById('mensaje-frase'), '', false);
     campo.focus();
   });
@@ -965,15 +974,19 @@ async function iniciar() {
   const pie = document.getElementById('pie-modo');
   pie.textContent = 'Base de datos: ' + BaseDeDatos.nombreModo();
 
-  // Si ya hay una frase guardada se salta al tablero: la pantalla de inicio
-  // solo aparece la primera vez. Cambiar la frase más adelante no pasa por
-  // aquí, va por su propio botón.
+  // Inicio saluda una vez al día, no solo en el estreno: la clave guarda el día
+  // local en que se mostró, así que al cambiar de día vuelve a aparecer. Sin
+  // frase también se muestra, para no dejar un tablero sin intención propia.
+  const hoy = claveDeHoy();
+  const ultimoInicio = Almacen.leer(Claves.ultimoInicio, null);
   const hayFrase = Almacen.leer(Claves.frase, '');
-  if (hayFrase) {
-    abrirTablero();
-  } else {
+
+  if (ultimoInicio !== hoy || !hayFrase) {
     pintarResumenInicio();
     mostrarPantalla('inicio');
+    Almacen.escribir(Claves.ultimoInicio, hoy);
+  } else {
+    abrirTablero();
   }
 
   conectarEventos();

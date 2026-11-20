@@ -29,8 +29,9 @@
   <div class="contenedor">
 
     <!-- ============ PANTALLA 1 · INICIO ============ -->
-    <!-- 
-    Esta es la pantalla que el usuario ve al abrir la app por primera vez. Esta pantalla no aparece de nuevo luego de su aparación, excepto si el usuario borra todos los datos de la app.
+    <!--
+    Saludo del estreno y de la primera apertura de cada día: recuerda la racha
+    y devuelve al tablero sin volver a pedir la frase si ya está guardada.
     -->
 
     <section class="pantalla pantalla--centro" id="pantalla-inicio">
@@ -40,7 +41,7 @@
         <p class="subtitulo">
           Registra lo que progresas cada día y mantén viva tu racha.
         </p>
-        <!-- Botón para iniciar sesión y continuar a la siguiente pantalla -->
+        <!-- Devuelve al tablero si ya hay frase; en el estreno abre la intención. -->
         <button type="button" class="boton boton--grande" id="boton-iniciar-sesion">
           Iniciar sesión
         </button>
@@ -49,9 +50,10 @@
     </section>
 
     <!-- ============ PANTALLA 2 · INTENCIÓN ============ -->
-    <!-- 
-    Esta sección aparece por primera vez luego de presionar el botón "Iniciar sesión" en la pantalla de Inicio, y para acceder a ella de nuevose debe presionar el botón "Cambiar frase" en la "Pantalla 3: Tablero".
-    La idea es que el usuario pueda tener una intensión presente todos los días, ya sea que desee mantener la misma durante varios días o que desee cambiarla luego de cierto tiempo. Por ello, la pantalla se oculta luego de su primera aparición y aparece nuevamente por acción del usuario.
+    <!--
+    Aparece en el estreno, al pulsar «Iniciar sesión» sin frase guardada, y
+    después solo con «Cambiar frase» en el tablero: el saludo diario ya no la
+    abre para no obligar a reescribir la intención cada mañana.
     -->
     <section class="pantalla pantalla--centro" id="pantalla-intencion" hidden>
       <div class="centro">
@@ -78,9 +80,11 @@
     </section>
 
     <!-- ============ PANTALLA 3 · TABLERO ============ -->
-    <!-- 
-    Esta pantalla es la pantalla principal de la app, y es la que ve el usuario siempre que abre la app luego de haber ingresado por primera vez. 
-    En esta pantalla se encuentra la frase que el usuario ingresó en la "Pantalla 2: Intención", el interruptor de modo y el botón para cambiar la frase. Por debajo de ello, esta el contador de Racha, que señala cuantos días seguidos se ha registrado una sesión. Y debajo de ello, en una sola columna, el formulario para registrar los avances del día (fecha y minutos a la izquierda, la descripción de lo que se ha avanzado a la derecha); y por último el historial reciente de las sesiones guardadas, así como el botón para acceder a la lista de resúmenes guardados.
+    <!--
+    Pantalla principal: se ve en las aperturas del día posteriores al saludo y
+    al entrar desde él. Tiene la frase elegida, el interruptor de modo y «Cambiar
+    frase»; debajo, la racha de días consecutivos, el formulario de avances del
+    día y el historial reciente con el acceso a los resúmenes guardados.
     -->
     <section class="pantalla" id="pantalla-tablero" hidden>
       <!-- Bloque que contiene la frase ingresada por el usuario, el selector de
