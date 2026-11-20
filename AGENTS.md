@@ -192,7 +192,7 @@ degradados, y todos avisan al usuario en el pie (`#pie-modo`):
 |---|---|
 | `sql.js` no carga (sin red, CDN caído) | `modo = 'respaldo'`: array en memoria, misma API |
 | Falla el primer arranque de SQLite | Un reintento, luego respaldo (bucle de `BaseDeDatos.iniciar`) |
-| `localStorage` bloqueado | `Almacen` usa memoria; se avisa de que se perderá al cerrar |
+| `localStorage` bloqueado | `Almacen` usa memoria; lo guardado se pierde al cerrar, sin aviso |
 
 **Regla:** cualquier método nuevo de `BaseDeDatos` debe tener las dos
 implementaciones (SQL y respaldo) y devolver el mismo shape. Si solo funciona
@@ -230,11 +230,11 @@ en modo SQL, la app está rota sin internet.
    archivos deben ser relativas (`estilos.css`, no `/estilos.css`) y los nombres
    distinguen mayúsculas: `Estilos.css` funciona en Windows y da 404 en
    producción.
-10. **El texto del pie se arma a mano en dos sitios**: `iniciar()` y el manejador
-    de `#boton-modo-claro`. `BaseDeDatos.nombreModo()` existe, pero no se usa.
-    Como cada ruta escribe su propia cadena, un cambio hecho en un solo sitio
-    deja el pie diciendo dos cosas distintas según se llegue a él; toca los dos
-    o no cambies ninguno. La spec 003 lo fija literal, hasta el punto final.
+10. **El pie dice solo la base de datos**: `iniciar()` lo arma con
+    `BaseDeDatos.nombreModo()`, que es la única fuente de ese texto; el modo
+    claro/oscuro vive en el selector `#boton-modo-claro` y en `#texto-modo`.
+    No lo dupliques en el manejador del selector: el pie no cambia al alternar
+    el modo. `nombreModo()` devuelve `respaldo`, no «modo de respaldo».
 
 ## Forma de trabajar
 

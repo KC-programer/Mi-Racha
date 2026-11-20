@@ -36,7 +36,7 @@ Los tres puntos que la validación dejó abiertos, **de forma explícita**:
 
 Y, además:
 
-- **El DOM.** Ningún `id`, ninguna clase, ningún atributo, ningún orden de bloques, nada de `Pantallas`, nada de `tabindex`, nada de `hidden`, y en particular **nada de `aria-live` en `#pie-modo`**. Las cuatro pantallas siguen siendo cuatro y en el mismo orden. Los atributos que ya existen —`aria-labelledby`, `role="alert"`, `role="status"`, `aria-live="polite"` en `#mensaje-formulario`— **no se tocan**: ese `aria-live` es de la spec anterior y no tiene nada que ver con esto.
+- **El DOM, en esta pasada.** Ningún `id`, ninguna clase, ningún atributo, ningún orden de bloques, nada de `Pantallas`, nada de `tabindex`, nada de `hidden`, y en particular **nada de `aria-live` en `#pie-modo`**. Una decisión posterior del cliente sí añadió el título `#titulo-semana`. Las cuatro pantallas siguen siendo cuatro y en el mismo orden. Los atributos que ya existen —`aria-labelledby`, `role="alert"`, `role="status"`, `aria-live="polite"` en `#mensaje-formulario`— **no se tocan**: ese `aria-live` es de la spec anterior y no tiene nada que ver con esto.
 - **La lógica de `app.js`.** Ni `Almacen`, ni `Claves`, ni `ESQUEMA_SQL`, ni `RUTA_SQL_JS`, ni `BaseDeDatos`, ni `calcularRacha`, ni `moverDias`, ni `claveDeHoy`, ni `fechaLegible`, ni `formatearTiempo`, ni `formatearDiaCorto`, ni `formatearRangoSemana`, ni `calcularSemanasCerradas`, ni `calcularTotalesSemana`, ni `agruparSesionesPorDia`, ni los listeners. **La única excepción** son las dos cadenas de texto de RF-013, que son texto de interfaz. `iniciar()` no cambia, ni una línea: ni una función nueva, ni una llamada, ni una espera, ni un `catch`.
 - **Detectar si la fuente ha cargado.** Ni con `document.fonts`, ni con un `onerror` en el `<link>`, ni con un temporizador de seguridad. Decidido y razonado en «La decisión que se revirtió».
 - **El formato del rango.** `dd/mm - dd/mm`, con ceros, y `dd/mm/aaaa - dd/mm/aaaa` solo cuando los años del lunes y del domingo difieren. Está verificado por los criterios de la spec 001 y **no se toca**.
@@ -193,7 +193,7 @@ Los demás estados:
 
 ### RF-013 · La cadena de datos deja de llevar puntos medios
 
-`pintarCabeceraResumen` pinta `"28/09 - 04/10 · 2 h 30 min · 3 días con sesión"`. La cadena de metadatos unida por puntos medios es un rasgo de plantilla, y aquí además **compite con el propio contenido**: el rango de fechas usa el guion.
+`pintarCabeceraResumen` pintaba `"28/09 - 04/10 · 2 h 30 min · 3 días con sesión"` cuando se escribió esta spec. La cadena de metadatos unida por puntos medios es un rasgo de plantilla, y aquí además **compite con el propio contenido**: el rango de fechas usa el guion. Después, por decisión del cliente, los hechos se repartieron en dos elementos; esta spec solo cambió los dos puntos medios por comas.
 
 Esta spec cambia **exactamente dos cadenas**, en dos funciones:
 
@@ -202,16 +202,16 @@ Esta spec cambia **exactamente dos cadenas**, en dos funciones:
 
 **Lo que no se toca, y es lo importante:**
 
-- **El rango no se toca.** `formatearRangoSemana` no se modifica, así que la regla de `dd/mm - dd/mm` y el año en el cruce de Año Nuevo siguen siendo los mismos, y el criterio 9 de la spec 001 sigue cumpliéndose. La cabecera **sigue empezando por el texto exacto del rango**.
+- **El rango no se toca.** `formatearRangoSemana` no se modifica, así que la regla de `dd/mm - dd/mm` y el año en el cruce de Año Nuevo siguen siendo los mismos, y el criterio 9 de la spec 001 sigue cumpliéndose. En esta pasada la cabecera **empieza por el texto exacto del rango**; una decisión posterior del cliente la convirtió en el título `Semana <rango>`, con el rango intacto justo después de la palabra `Semana`.
 - **No cambia ningún dato, ningún criterio funcional ni ningún invariante**: ni `sesion`, ni `Claves`, ni el esquema, ni el orden `fecha DESC, creado_en DESC, id DESC`, ni el cálculo de la racha, ni el de los totales. Solo cambia cómo se separa una lista de hechos dentro de una frase que el usuario ya estaba viendo.
 
 Los dos textos quedan en español y en minúscula, como estaban.
 
-**Este es el único cambio de esta spec que toca `app.js`.** Va aislado en su propia tarea, y es la más fácil de revertir del proyecto entero: son dos cadenas y dos funciones.
+**Este es el único cambio de esta spec que toca `app.js`.** Va aislado en su propia tarea, y es la más fácil de revertir del proyecto entero: son dos cadenas y dos funciones. Otras decisiones posteriores del cliente también tocaron `app.js`, pero son ajenas a esta spec.
 
 ### RF-014 · Se retiran los rótulos en mayúsculas sostenidas
 
-Ni `.marca` ni `.rotulo--claro` llevan `text-transform: uppercase` ni `letter-spacing` abierto. Los rótulos pasan a ser texto pequeño en `grafito`. Las palabras no cambian: `"Mi Racha"` y `"Paso 1 de 2"` siguen siendo esas.
+Ni `.marca` ni `.rotulo--claro` llevan `text-transform: uppercase` ni `letter-spacing` abierto. Los rótulos pasan a ser texto pequeño en `grafito`. En esta pasada las palabras no cambiaron: `"Mi Racha"` sigue siendo esa. Dos decisiones posteriores del cliente, fuera del alcance de esta spec, retiraron `"Paso 1 de 2"` de la pantalla de la frase y ocultaron a la vista el rótulo `"Mi frase de hoy"`, que sigue dando nombre al campo.
 
 ### RF-015 · Lo que se mantiene, sin excepciones
 
@@ -338,11 +338,11 @@ Verificables **en el navegador o con la consola de DevTools**. El proyecto **no 
 21. **Alineación.** El número de la racha está alineado a la izquierda con el resto del tablero, en la misma línea base que sus palabras, y no está centrado. Las dos pantallas de ritual siguen centradas.
 22. **Sin degradado.** En `estilos.css` hay **cero** ocurrencias de `gradient(`.
 23. **Una sola sombra.** Hay **exactamente un sitio** de la hoja que usa `box-shadow` como sombra decorativa, y es el contenedor con scroll del historial. Las tarjetas no tienen sombra.
-24. **El separador.** El total de la semana se lee `"28/09 - 04/10, 2 h 30 min, 3 días con sesión"`, y el resumen del historial `"3 sesiones, 2 h 30 min de estudio en total"`. **La cabecera empieza por el texto exacto del rango**, y el texto de la opción del selector es **idéntico** a ese rango. `formatearRangoSemana` no ha cambiado: el criterio 9 de la spec 001 se sigue cumpliendo, y `28/12/2026 - 03/01/2027` sale igual en el cruce de Año Nuevo.
+24. **El separador.** En esta pasada el total de la semana se leyó `"28/09 - 04/10, 2 h 30 min, 3 días con sesión"`; por decisión posterior se lee `Semana 28/09 - 04/10` y, debajo, `3 días con sesión | 2 h 30 min en total`. El resumen del historial sigue siendo `"3 sesiones, 2 h 30 min de estudio en total"`. El rango del título es **idéntico** al texto de la opción del selector, y `formatearRangoSemana` no ha cambiado: el criterio 9 de la spec 001 se sigue cumpliendo, y `28/12/2026 - 03/01/2027` sale igual en el cruce de Año Nuevo.
 25. **El pie no ha cambiado. Criterio de regresión.** En las **cuatro** situaciones —normal, sin `sql.js`, con `localStorage` bloqueado y **sin la fuente**—, `#pie-modo` dice **exactamente** lo que dice hoy, carácter a carácter. En el caso normal: `Tus datos se guardan solo en este navegador. Base de datos: SQL (SQLite).` Y lo importante es la cuarta: **sin la fuente el pie dice lo mismo**, porque no hay nada que declarar sobre la tipografía.
-26. **Ni una línea de lógica añadida.** En `app.js` **no** hay ninguna función nueva, ni ninguna llamada nueva, ni ningún `catch` nuevo, ni ningún `setTimeout` ni `setInterval`, ni ninguna mención de `document.fonts`. `iniciar()` no ha cambiado. Lo único que ha cambiado en `app.js` son **dos cadenas de texto**, en `pintarCabeceraResumen` y `pintarHistorial`.
+26. **Ni una línea de lógica añadida, en esta pasada.** En `app.js` **no** hay ninguna función nueva, ni ninguna llamada nueva, ni ningún `catch` nuevo, ni ningún `setTimeout` ni `setInterval`, ni ninguna mención de `document.fonts`. `iniciar()` no ha cambiado. Lo único que cambió aquí son **dos cadenas de texto**, en `pintarCabeceraResumen` y `pintarHistorial`; las decisiones posteriores del cliente —arranque acotado y cabecera repartida— son cambios nuevos, fuera de esta spec.
 27. **Modos degradados.** (a) Sin `sql.js`: el pie indica respaldo y todo funciona. (b) Fallo del arranque: mismo resultado tras el reintento. (c) `localStorage` bloqueado: el pie avisa y todo funciona. En los tres, el aspecto es el del modo normal.
-28. **El rango y el DOM intactos.** El DOM no ha cambiado: los mismos elementos, los mismos `id`, las mismas clases y el mismo orden, y **ningún atributo nuevo**. La rejilla de `.tablero` sigue con los mismos dos cortes. Ninguna regla CSS nueva menciona `aria-live`, ni el anillo del `h1`, ni convierte `#resumen-semanal` en clase.
+28. **El rango y el DOM intactos, en esta pasada.** El DOM no cambió aquí: los mismos elementos, los mismos `id`, las mismas clases y el mismo orden, y **ningún atributo nuevo**. Después el cliente sí repartió la cabecera en dos elementos. La rejilla de `.tablero` sigue con los mismos dos cortes. Ninguna regla CSS nueva menciona `aria-live`, ni el anillo del `h1`, ni convierte `#resumen-semanal` en clase.
 29. **Sin `innerHTML` y sin referencias por número de línea.** No hay ni `innerHTML`, ni recorte de `avances`, ni una referencia por número de línea en ningún archivo.
 30. **La constitution y la documentación.** El principio 2 dice que los datos no salen del navegador y **ya no afirma que la única descarga sea `sql.js`**; los otros siete principios y la sección «Cómo se usa» están intactos. `AGENTS.md` dice que hay dos dependencias y su checklist comprueba la fuente. `AVANCES.md` sigue por debajo de 75 líneas y tiene anotado el antes y el después del principio 2.
 

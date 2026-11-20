@@ -202,7 +202,7 @@ los tres puntos que dejó la spec 001.
 - `.dia__sesiones`: sin caja; sus hijos se sangran y llevan filete lateral.
 - **`.dia__sesiones .sesion`**: sin `border`, sin `background`, sin `border-radius`, con `border-left` de `var(--borde)`, sangría y `--espacio-2` de separación. Escrita **después** de `.sesion`, para que gane por especificidad.
 - `.sesion__minutos`, dentro del resumen: en el margen derecho del día, en `var(--texto-suave)`. El acento queda para lo que cuenta, no para cada fila.
-- `#resumen-semanal`: sigue siendo una regla por `id`. Su trabajo cambia: ahora pone el total de la semana **al nivel de titular de la pantalla** —en `var(--texto)` y con `--texto-2`—, y su comentario se reescribe para explicar por qué existe: no para anular un margen negativo, sino porque este total es el titular y el del historial no lo es.
+- `#resumen-semanal`: sigue siendo una regla por `id`. En esta pasada pone el total de la semana **al nivel de titular de la pantalla** —en `var(--texto)` y con `--texto-2`—, y su comentario se reescribe para explicar por qué existe: no para anular un margen negativo, sino porque este total es el titular y el del historial no lo es. Una decisión posterior del cliente repartió la cabecera: el rango pasó a `#titulo-semana` y este `id` quedó con el subtítulo.
 - `#selector-semana`: `width: auto` con `min-width` de 14 rem, y borde reforzado en `var(--texto-suave)`. **Se queda en `1rem` y con su anillo de foco.** La flecha nativa se deja como está.
 - El `label` del selector: sin mayúsculas ni `letter-spacing`, en `var(--texto-suave)`.
 - `#boton-volver-tablero`: filete arriba en `var(--borde)` y `--espacio-5` de aire, para que no se lea como un día más.
@@ -315,19 +315,21 @@ de hoy baja a 0. Las dos pantallas de ritual siguen centradas.
 total pasa a `, `. **Nada más**: ni `formatearRangoSemana`, ni `formatearTiempo`,
 ni ninguna otra función, ni ninguna comparación, ni ninguna clave.
 
-La cabecera pasa a leerse `"28/09 - 04/10, 2 h 30 min, 3 días con sesión"` y el
+En el momento de esta pasada la cabecera pasó a leerse
+`"28/09 - 04/10, 2 h 30 min, 3 días con sesión"` —después el cliente la repartió
+en `Semana 28/09 - 04/10` y `3 días con sesión | 2 h 30 min en total`—, y el
 resumen del historial `"3 sesiones, 2 h 30 min de estudio en total"`.
 
 **RF:** RF-013.
 
 **Hecho cuando:** con una semana con actividad, `#resumen-semanal` se lee
-exactamente esa cadena, con coma y sin punto medio; `#resumen` se lee
-`"3 sesiones, 2 h 30 min de estudio en total"`. **El texto de la opción
-seleccionada del selector sigue siendo idéntico carácter a carácter al rango del
-principio de la cabecera**, y `formatearRangoSemana` **no ha cambiado**: en el
-cruce de Año Nuevo sigue dando `28/12/2026 - 03/01/2027`. Los números de la
-cabecera y del historial son los mismos de antes. La app arranca, guarda, borra y
-navega igual.
+exactamente esa cadena con coma y sin punto medio —después el cliente la repartió,
+así que hoy el rango vive en `#titulo-semana` y este `id` lleva el subtítulo—;
+`#resumen` se lee `"3 sesiones, 2 h 30 min de estudio en total"`. **El texto de
+la opción seleccionada del selector sigue siendo idéntico carácter a carácter al
+rango del título**, y `formatearRangoSemana` **no ha cambiado**: en el cruce de
+Año Nuevo sigue dando `28/12/2026 - 03/01/2027`. Los números de la cabecera y del
+historial son los mismos de antes. La app arranca, guarda, borra y navega igual.
 
 **RF:** RF-013. **No es una tarea descartable:** el cliente la ha aceptado (D3), así que forma parte de la spec y su «hecho cuando» es obligatorio. Lo que sí sigue siendo cierto es que es **la más fácil de revertir del proyecto entero**: dos cadenas, en dos funciones, sin nada más alrededor.
 
@@ -392,7 +394,7 @@ En `estilos.css` hay cero `@font-face` y cero `@import`; en `app.js` no hay ni
 referencias por número de línea, ni más de dos menciones del nombre de la familia.
 La auditoría de literales no encuentra ningún color fuera de `:root` y ni un
 `gradient(`. El bloque oscuro no tiene ni un selector. Y `app.js` no ha cambiado
-salvo las dos cadenas de RF-013.
+salvo las dos cadenas de RF-013, más lo que decidiera el cliente después.
 
 ---
 

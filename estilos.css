@@ -54,12 +54,17 @@
   /* Medida de lectura: por debajo de 80 caracteres. */
   --medida: 62ch;
 
-  /* Escala tipográfica */
-  --texto-1: 1rem;
-  --texto-0: 0.875rem;
-  --texto-2: 1.125rem;
-  --titulo: clamp(1.75rem, 5vw, 2.5rem);
-  --cifra: clamp(2.75rem, 11vw, 4rem);
+  /* Escala tipográfica, un escalón por encima de la pasada visual en las cuatro
+     pantallas: crece lo que se lee; los campos siguen en 1rem para que iOS no
+     haga zoom al enfocar. */
+  --texto-0: 1rem;
+  --texto-1: 1.125rem;
+  --texto-2: 1.25rem;
+  --titulo: clamp(2rem, 5.5vw, 2.9rem);
+  /* La frase del bloque de cabecera: un paso por encima del titular y por debajo
+     de --cifra, que sigue siendo solo del número de racha. */
+  --frase: clamp(2.1rem, 6vw, 3rem);
+  --cifra: clamp(3.85rem, 15vw, 6rem);
 
   /* Ritmo */
   --espacio-1: 0.25rem;
@@ -70,6 +75,7 @@
 
   /* Formas y medidas */
   --radio-chico: 6px;
+  --radio-pildora: 999px;
   --ancho: 64rem;
   /* Una sola sombra en toda la hoja, y es el único alfa: lo consume el único
      contenedor truncado. Su RGB lleva el de la tinta nueva. */
@@ -91,7 +97,8 @@
 /* El modo oscuro solo redefine variables. Ninguna regla se replica aquí: por eso
    cambiar un color basta para que cambie en las cuatro pantallas. Y lo que no
    aparece son las medidas —`--fuente`, `--medida`, la escala, el ritmo,
-   `--radio-chico`, `--ancho` y `--margen-dia`—, porque no cambian con el modo. */
+   `--radio-chico`, `--radio-pildora`, `--ancho` y `--margen-dia`—, porque no
+   cambian con el modo. */
 @media (prefers-color-scheme: dark) {
   :root {
     --fondo: #18191b;
@@ -125,20 +132,48 @@
   }
 }
 
-/* Cuando el cuerpo tiene la clase modo-claro, usar valores claros directos.
-   Estas reglas tienen prioridad sobre el @media (prefers-color-scheme: dark)
-   siempre que la clase esté presente en <body>. */
+/* El modo elegido manda sobre el sistema. El @media de arriba solo decide el
+   primer pintado; en cuanto hay una clase, esta define la paleta completa. Por
+   eso las dos clases repiten todas las variables: si faltara una, al forzar un
+   modo sobre el sistema contrario se quedaría con el color del otro. */
 body.modo-claro {
   --fondo: #fdf8f5;
-  --superficie: #ffffff;      /* fondo de tarjetas, racha y historial en modo claro */
-  --superficie-suave: #fdf8f5; /* fondo de inputs y cuadros de texto en modo claro */
+  --superficie: #ffffff;       /* fondo de tarjetas, racha y historial */
+  --superficie-suave: #fdf8f5; /* fondo de inputs y cuadros de texto */
   --texto: #1e140f;
+  --texto-suave: #626363;
   --borde: #d0c8c5;
-  --sombra: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --foco: #1e140f;
+  --regla-tenue: #e0d8d5;
+  --primario: #5a3f93;
+  --primario-fuerte: #483079;
+  --primario-suave: #eee9f7;
   --sobre-primario: #f2e8e0; /* beige cálido para legibilidad en botones */
-  --exito: #f2e8e0;
+  --exito: #855611;
+  --exito-suave: #fbf1e2;
   --error: #c45147;
+  --error-suave: #fbeeee;
+  --foco: #1e140f;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+body.modo-oscuro {
+  --fondo: #18191b;
+  --superficie: #212121;
+  --superficie-suave: #2a2a2b;
+  --texto: #ebebec;
+  --texto-suave: #aaabab;
+  --borde: #393939;
+  --regla-tenue: #2f2f30;
+  --primario: #b39ae0;
+  --primario-fuerte: #cdb9f2;
+  --primario-suave: #282234;
+  --sobre-primario: #18191b;
+  --exito: #efbf72;
+  --exito-suave: #2f2617;
+  --error: #ff9c9c;
+  --error-suave: #3a1f1f;
+  --foco: #ebebec;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 * { box-sizing: border-box; }
@@ -220,12 +255,6 @@ body {
   font-weight: 600;
 }
 
-.rotulo--claro {
-  color: var(--texto-suave);
-  font-weight: 500;
-  font-size: var(--texto-0);
-}
-
 .ayuda {
   margin: var(--espacio-2) 0 0;
   font-size: var(--texto-0);
@@ -262,41 +291,111 @@ body {
 
 /* ---------- Cabecera ---------- */
 
+/* El bloque de la frase es una tarjeta de esquinas rectas: superficie y filete,
+   sin radio, para que se lea como un recuadro y no como otra tarjeta más. Tres
+   filas: el selector arriba a la izquierda, la frase centrada y la acción abajo
+   a la derecha. Las esquinas son la posición, no un adorno. */
 .cabecera {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  display: grid;
+  gap: var(--espacio-4);
+  margin-bottom: var(--espacio-4);
+  padding: var(--espacio-4);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
 }
 
-/* La frase es lo que escribió la persona, así que lleva el paso de la escala del
-   titular y la medida declarada. El interlineado va más cerrado que el del cuerpo
-   —1,3 frente a 1,55— porque a este tamaño las serifas necesitan menos aire, no
-   más: el aire de más es lo que corresponde al texto de cuerpo. */
+.cabecera__texto {
+  text-align: center;
+}
+
+/* La acción se pega a la esquina inferior derecha del bloque, no al texto: la
+   celda ocupa el ancho completo del recuadro. */
+.cabecera__accion {
+  justify-self: end;
+}
+
+/* La frase es lo que escribió la persona, así que lleva un paso propio de la
+   escala, por encima del titular y por debajo de la cifra de la racha. La medida
+   se centra con márgenes automáticos y el texto con `text-align` del contenedor;
+   el interlineado va más cerrado que el del cuerpo porque a este tamaño las
+   serifas necesitan menos aire, no más. */
 .frase {
-  margin: var(--espacio-2) 0 0;
-  font-size: var(--titulo);
+  margin: 0 auto;
+  font-size: var(--frase);
   line-height: 1.3;
   letter-spacing: -0.02em;
   max-width: var(--medida);
 }
 
+/* ---------- Selector de modo ---------- */
+
+/* El interruptor es la única pieza de la hoja con forma de píldora: su posición
+   es el estado, no un adorno. La pista es el propio botón y la bola se desplaza
+   con `left`, que es lo que puede animar sin tocar el tamaño de la caja. */
+.modo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  justify-self: start;
+}
+
+.modo__texto {
+  font-size: var(--texto-0);
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.interruptor {
+  position: relative;
+  flex: none;
+  width: 3rem;
+  height: 1.65rem;
+  padding: 0;
+  background: var(--superficie-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-pildora);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.interruptor__bola {
+  position: absolute;
+  top: 50%;
+  left: 0.2rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  background: var(--texto-suave);
+  border-radius: var(--radio-pildora);
+  transform: translateY(-50%);
+  transition: left 0.2s ease, background-color 0.2s ease;
+}
+
+/* Encendido = modo claro: la bola va a la derecha y toma el acento. */
+.interruptor[aria-checked="true"] {
+  background: var(--primario-suave);
+  border-color: var(--primario);
+}
+
+.interruptor[aria-checked="true"] .interruptor__bola {
+  left: calc(100% - 1.35rem);
+  background: var(--primario);
+}
+
 /* ---------- Racha ---------- */
 
-/* La racha es una franja y no un cartel: el número va al principio de la frase que
-   lo acompaña, en la misma línea base, y todo a la izquierda con el resto del
-   tablero. Comparte con `.tarjeta` el filete y la superficie y no añade sombra ni
-   degradado propios: los dos eran veladura, y no contaban nada. El DOM son tres
-   `<p>` hermanos, así que la columna de la derecha se construye con rejilla y no
-   con un contenedor que los envuelva. */
+/* La racha es una franja y no un cartel: el número va a la izquierda ocupando las
+   dos filas, y a su derecha se apilan la etiqueta y la nota. Comparte con `.tarjeta`
+   el filete y la superficie y no añade sombra ni degradado propios: los dos eran
+   veladura, y no contaban nada. El DOM son tres `<p>` hermanos, así que las columnas
+   se construyen con rejilla y no con un contenedor que los envuelva. La alineación
+   va arriba, no a la línea base: la etiqueta tiene que arrancar a la altura del
+   número, no colgar de su pie. */
 .racha {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: var(--espacio-3);
   row-gap: var(--espacio-1);
-  align-items: baseline;
+  align-items: start;
   justify-items: start;
   text-align: left;
   margin-bottom: var(--espacio-4);
@@ -323,19 +422,29 @@ body {
   color: var(--primario);
 }
 
+/* La etiqueta crece con la cifra y no con una talla fija: si el número sube, «Días
+   de racha» tiene que subir con él o la franja se parte en dos escalas. El factor
+   0,34 la deja por debajo de la mitad de la cifra, que es lo que la mantiene como
+   etiqueta y no como una segunda cifra. El relleno superior compensa el aire que la
+   fuente deja sobre el número: con las cajas alineadas, la mayúscula de la etiqueta
+   quedaría por encima de la cifra, y lo que se lee es el borde de la tinta, no la
+   caja. Va en `em` para que siga valiendo con cualquier tamaño. */
 .racha__texto {
   grid-column: 2;
   grid-row: 1;
   margin: 0;
-  font-size: var(--texto-2);
+  padding-top: 0.22em;
+  font-size: calc(var(--cifra) * 0.34);
   font-weight: 600;
 }
 
+/* La nota va debajo de la etiqueta, en su misma columna: así la cifra queda sola a
+   la izquierda y las dos frases se leen como un bloque a su derecha. */
 .racha__nota {
   grid-column: 2;
   grid-row: 2;
   margin: 0;
-  font-size: var(--texto-0);
+  font-size: var(--texto-1);
   color: var(--texto-suave);
 }
 
@@ -350,8 +459,11 @@ body {
   border-left: 1px solid var(--regla-tenue);
 }
 
-/* ---------- Distribución en dos columnas ---------- */
+/* ---------- Distribución del tablero ---------- */
 
+/* Una sola columna: el formulario y el historial se leen en el orden en que se
+   usan, primero apuntar la sesión y después ver lo apuntado. Antes iban lado a
+   lado y el historial quedaba a la derecha del sitio donde se escribe. */
 .tablero {
   display: grid;
   grid-template-columns: 1fr;
@@ -359,8 +471,59 @@ body {
   align-items: start;
 }
 
-@media (min-width: 860px) {
-  .tablero { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); }
+/* La tarjeta ocupa todo el ancho, pero los campos no se reparten el espacio por
+   igual: la fecha y los minutos se apilan en una columna estrecha y los avances
+   se quedan con el resto. Repartir el ancho entre todos estiraría el campo de los
+   minutos hasta el ancho de la tarjeta, que es lo que hace que un formulario ancho
+   se vea roto. */
+#formulario-sesion {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: var(--espacio-4);
+  align-items: stretch;
+}
+
+/* Dentro de la rejilla el aire lo pone el `gap`; el margen de `.campo` se quedaría
+   sumado y desalinearía las dos columnas. */
+#formulario-sesion .campo { margin-bottom: 0; }
+
+.formulario__datos {
+  display: grid;
+  gap: var(--espacio-4);
+  align-content: start;
+}
+
+/* La etiqueta y el textarea del mismo bloque se apilan, y el `flex: 1` es lo que
+   lleva el textarea hasta el pie de la fila: así iguala la altura de la columna de
+   al lado en vez de quedarse en sus cinco filas. */
+.campo--avances {
+  display: flex;
+  flex-direction: column;
+}
+
+.campo--avances textarea {
+  flex: 1;
+  min-height: 9rem;
+}
+
+/* El botón no se estira con la tarjeta: uno de mil píxeles de ancho deja de leerse
+   como un botón y pasa a leerse como una barra. Conserva su ancho y va al final de
+   la fila, debajo de los avances. Lleva las dos clases porque `.boton` ya fija
+   `width: 100%` y esta regla tiene que ganarle. */
+.boton.formulario__accion {
+  grid-column: 1 / -1;
+  justify-self: end;
+  width: auto;
+  min-width: 14rem;
+  /* `font: inherit` de `.boton` lo dejaría en el cuerpo, por debajo del resto
+     de la tarjeta: aquí sube con ella. */
+  font-size: var(--texto-1);
+}
+
+/* El aviso ocupa la fila entera: su filete de canto tiene que llegar al ancho del
+   formulario, no al de la columna donde nace. */
+#formulario-sesion .mensaje {
+  grid-column: 1 / -1;
 }
 
 /* ---------- Formularios ---------- */
@@ -399,6 +562,7 @@ textarea { resize: vertical; min-height: 3rem; }
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
+.interruptor:focus-visible,
 .boton:focus-visible,
 .boton-borrar:focus-visible {
   outline: 2px solid var(--foco);
@@ -464,7 +628,7 @@ select:focus-visible,
      Con el borde de todo el alrededor volvería a ser una caja. */
   border-left: 2px solid var(--exito);
   border-radius: var(--radio-chico);
-  font-size: 0.9rem;
+  font-size: var(--texto-0);
   background: var(--exito-suave);
   color: var(--exito);
 }
@@ -543,10 +707,10 @@ select:focus-visible,
   flex-wrap: wrap;
 }
 
-.sesion__fecha { font-weight: 600; }
+.sesion__fecha { font-size: var(--texto-1); font-weight: 600; }
 
 .sesion__minutos {
-  font-size: 0.85rem;
+  font-size: var(--texto-0);
   font-weight: 600;
   color: var(--primario);
   white-space: nowrap;
@@ -576,7 +740,7 @@ select:focus-visible,
   overflow-wrap: anywhere;
 }
 
-.sesion__vacio { color: var(--texto-suave); font-style: italic; }
+.sesion__vacio { font-size: var(--texto-1); color: var(--texto-suave); font-style: italic; }
 
 .boton-borrar {
   border: 0;
@@ -584,7 +748,7 @@ select:focus-visible,
   padding: 0.2rem;
   margin-top: 0.6rem;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--texto-0);
   color: var(--texto-suave);
   text-decoration: underline;
   cursor: pointer;
@@ -607,16 +771,25 @@ select:focus-visible,
 
 /* ---------- Resumen semanal ---------- */
 
-/* Sigue siendo una regla por `id` —el historial sigue usando `.resumen` y los dos
-   bloques no son lo mismo—, pero su trabajo ha cambiado: el total de la semana es
-   el titular de esta pantalla, dice cuánto se ha reportado en total, así que va en
-   tinta y con el corte de titular y no como la nota de una tarjeta. El aire de
-   abajo separa la cabecera de la columna de días; ya no hay ningún margen
-   negativo que compensar. */
+/* El rango nombra la semana, así que manda en el título; los totales pasan a ser
+   la explicación de debajo, en tono suave para no competir con él. Los dos van
+   centrados porque forman una sola cabecera. El tamaño del título se deriva de
+   `--titulo` para quedarse un escalón por debajo del h1 también cuando éste crece
+   con el ancho, en vez de quedar fijo en 26 px. La regla por `id` se conserva
+   porque `#resumen-semanal` comparte clase con el resumen del historial y el `id`
+   tiene que ganar sin tocar aquél. */
+#titulo-semana {
+  margin: 0 0 var(--espacio-1);
+  font-size: calc(var(--titulo) * 0.8);
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
 #resumen-semanal {
   margin: 0 0 var(--espacio-4);
   font-size: var(--texto-2);
-  color: var(--texto);
+  color: var(--texto-suave);
+  text-align: center;
 }
 
 /* La etiqueta del selector nombra el control y no lo anuncia: texto tranquilo en
@@ -651,11 +824,14 @@ label[for="selector-semana"] {
   border-bottom: 1px solid var(--borde);
 }
 
-/* El día es una línea, no una caja. Una caja añadiría un contenedor vacío alrededor
-   de algo que ya es una unidad por sí mismo, y con ella volvería el kit de
-   tarjetas. Lo que separa son los filetes: cada día cierra el anterior y abre el
-   suyo, y el aire de `--espacio-3` es lo que queda entre la regla y su fecha. */
+/* El día es una línea, no una caja: los filetes separan y el aire de
+   `--espacio-3` es lo que queda entre la regla y su fecha. La rejilla reserva la
+   columna fija de la fecha, con el total de minutos justo debajo, y deja que los
+   avances de la sesión empiecen en la primera línea, a la altura del `dd/mm`. */
 .dia {
+  display: grid;
+  grid-template-columns: var(--margen-dia) minmax(0, 1fr);
+  align-items: start;
   border: 0;
   border-top: 1px solid var(--borde);
   padding: var(--espacio-3) 0 0;
@@ -668,28 +844,32 @@ label[for="selector-semana"] {
   padding-top: 0;
 }
 
+/* La fila del día es la primera columna de la rejilla: apila la fecha y su total
+   en un solo sitio. Si sus hijos fueran celdas independientes, el total caería en
+   la fila 2 y quedaría debajo de las sesiones cuando el día tiene más de una. */
 .dia__fila {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--espacio-1);
 }
 
 /* La fecha va en un margen de ancho FIJO, y no con cifras tabulares: las cifras
    son una función de la fuente, así que sin ella el margen se desalinearía solo.
    Fijo alinea igual con la familia puesta y con la pila de reserva. */
 .dia__fecha {
-  flex: 0 0 var(--margen-dia);
   text-align: left;
+  font-size: var(--texto-1);
   font-weight: 700;
 }
 
+/* Sin `nowrap`: la columna de la fecha es fija, así que un total largo tiene que
+   envolver dentro de ella en vez de invadir el texto de los avances. */
 .dia__minutos {
-  font-size: 0.85rem;
+  font-size: var(--texto-0);
   font-weight: 600;
   color: var(--primario);
-  white-space: nowrap;
 }
 
 /* Las sesiones cuelgan del día y no son un bloque: el margen de fechas del día es
@@ -697,8 +877,10 @@ label[for="selector-semana"] {
    del día otra vez. Sin caja, porque una caja por fila devolvía el resumen al kit
    de tarjetas y lo hacía indistinguible del historial. */
 .dia__sesiones {
+  grid-column: 2;
+  grid-row: 1;
   list-style: none;
-  margin: var(--espacio-3) 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -710,12 +892,26 @@ label[for="selector-semana"] {
    resumen el historial se quedaría sin su bloque: por eso aquí se quitan caja,
    fondo y radio, y por eso el historial no se ha tocado. */
 .dia__sesiones .sesion {
-  margin-left: var(--margen-dia);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-2);
   padding: 0 0 0 var(--espacio-3);
   border: 0;
   border-left: 1px solid var(--borde);
   border-radius: 0;
   background: none;
+}
+
+/* La fila de minutos se disuelve para que el avance y el tiempo sean hermanos
+   en la misma línea: el avance va primero y el minuto se queda al final. */
+.dia__sesiones .sesion__fila {
+  display: contents;
+}
+
+.dia__sesiones .sesion__avances {
+  order: -1;
+  margin: 0;
 }
 
 /* El acento dice que esto cuenta, y en esta pantalla lo que cuenta es el total del
@@ -738,9 +934,22 @@ label[for="selector-semana"] {
    los que sí es información. */
 #encabezado-resumen-semanal:focus { outline: none; }
 
+/* Por debajo de este ancho la columna de la fecha y la de los avances ya no caben
+   sin apretarse: se apila todo en el orden en que se rellena y el botón recupera
+   el ancho completo, que es lo que se espera de un formulario de una columna. */
+@media (max-width: 800px) {
+  #formulario-sesion { grid-template-columns: 1fr; }
+  .boton.formulario__accion {
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 480px) {
   .contenedor { padding: 1.5rem 0.85rem 2.5rem; }
   .tarjeta { padding: 1.15rem; }
+  .cabecera { padding: 1.15rem; }
   .boton--grande { width: 100%; }
 }
 

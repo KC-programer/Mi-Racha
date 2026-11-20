@@ -2,7 +2,7 @@
 
 Fase visual y de persistencia de preferencia, derivada de `specs/003-modo-claro/spec.md`. No se tocan funciones de negocio ni esquema de datos: el cambio es puramente visual (variables CSS, clase en `<body>`, botón nuevo) y de persistencia en `localStorage`.
 
-**Ámbito:** `index.html`, `app.js`, `estilosCSS`. Sin nuevas dependencias, sin build, sin `npm install`. La app sigue abriendo con doble clic.
+**Ámbito:** `index.html`, `app.js`, `estilos.css`. Sin nuevas dependencias, sin build, sin `npm install`. La app sigue abriendo con doble clic.
 
 **Orden de implementación:** de abajo hacia arriba (capas de `app.js`), luego el HTML que sus helpers necesitan, luego el CSS, y la documentación al final. Cada fase deja la app arrancando y funcional.
 
@@ -16,10 +16,10 @@ Fase visual y de persistencia de preferencia, derivada de `specs/003-modo-claro/
    - Si `localStorage` tiene `modo` guardado → usarlo.
    - Si no, detectar `prefers-color-scheme` del sistema → usarlo como default.
    - Si nada de lo anterior → default oscuro.
-   - Actualizar el pie `#pie-modo` con el texto correspondiente: `Modo: Claro` u `Modo: Oscuro` (o con `(sistema)` si viene de la detección).
-   - Mantener el comportamiento degradado: si `localStorage` está bloqueado, avisar en el pie y usar detección del sistema.
+   - Dejar el pie `#pie-modo` intacto: sigue diciendo solo la base de datos; el modo lo dice el selector.
+   - Mantener el comportamiento degradado: si `localStorage` está bloqueado, usar detección del sistema sin aviso.
 
-4. `index.html` · Añadir el botón `#boton-modo-claro` en la zona superior del tablero, después de `#boton-cambiar-frase` (línea 78-80). El botón debe tener `type="button"` y clase `boton boton--suave`.
+4. `index.html` · Añadir el botón `#boton-modo-claro` en la esquina superior izquierda del bloque de la frase, con `type="button"`, `role="switch"`, `aria-checked` y el texto `#texto-modo` a su lado.
 
 5. `estilos.css` · Añadir variables CSS en `:root` para la paleta de modo claro (`--fondo-claro`, `--tinta-claro`, `--regla-claro`, `--exito-claro`, `--error-claro`, `--borde-claro`). Estas variables solo se definen en `:root` y se redefinen en `@media (prefers-color-scheme: light)`. Ningún color literal fuera de los bloques `:root`.
 
@@ -31,7 +31,7 @@ Fase visual y de persistencia de preferencia, derivada de `specs/003-modo-claro/
 
 ## 2. RF por paso
 
-1 → `Claves.modo` añadido · 2 → RF-001 · 3 → RF-005, RF-008 · 4 → RF-001 · 5 → RF-002, RF-003 · 6 → RF-003 · 7 → RF-004 · 8 → `AVANCES.md` · principio 5
+1 → `Claves.modo` añadido · 2 → RF-001 · 3 → RF-005, RF-004 · 4 → RF-001 · 5 → RF-002, RF-003 · 6 → RF-003 · 7 → RF-004 · 8 → `AVANCES.md` · principio 5
 
 ## 3. Decisiones que la spec deja abiertas
 
@@ -43,7 +43,7 @@ Fase visual y de persistencia de preferencia, derivada de `specs/003-modo-claro/
 
 2. **Detección `prefers-color-scheme` vs default oscuro**. El orden RF-005 es: 1. `localStorage`, 2. `prefers-color-scheme`, 3. default oscuro. El plan respeta este orden exacto: si el usuario nunca toca el botón y el sistema está en claro, la app arranca en modo claro; si el usuario cambia a oscuro, el toggle lo cambia y lo guarda.
 
-3. **Persistencia del pie**. El pie `#pie-modo` siempre informa: en modo normal oscuro dice `Base de datos: SQL (SQLite)`, en modo claro guardado dice `Modo: Claro. Base de datos: SQL (SQLite)`, y si viene de detección del sistema dice `Modo: Claro (sistema)`. Si `localStorage` está bloqueado, dice `Modo: Claro (memoria)` y avisa de que la elección se perderá al cerrar.
+3. **El pie no cambia.** `#pie-modo` dice siempre la base de datos (`Base de datos: SQL (SQLite)` o `Base de datos: respaldo`), también con `localStorage` bloqueado; el modo lo anuncia el selector. Se descartó escribir el modo en el pie porque duplicaba un estado que el selector ya muestra.
 
 ## 4. Trampas del proyecto que este plan toca
 
@@ -59,7 +59,7 @@ Fase visual y de persistencia de preferencia, derivada de `specs/003-modo-claro/
 - Pulsar el botón modo y comprobar que la clase `modo-claro` se añade/elimina en `<body>`.
 - Recargar la página y confirmar que el modo se mantiene (persistencia en `localStorage`).
 - Desconectar internet y recargar: la app debe arrancar en modo respaldo y el modo claro persistente debe mantenerse (o caer a detección del sistema si no hay guardado).
-- Verificar el pie `#pie-modo` muestra el texto correcto en cada caso.
+- Comprobar que el pie `#pie-modo` sigue diciendo solo la base de datos en cada caso, sin avisos.
 - Medir contraste en modo claro con el selector de color de DevTools (≥ 4,5:1 para texto y elementos interactivos).
 - Navegar con Tab y confirmar que el botón muestra anillo de `:focus-visible` con `--foco` (modo oscuro) o `--tinta-claro` (modo claro), ≥ 3:1.
 - Comprobar que no hay colores literales fuera de los bloques `:root` en `estilos.css`.

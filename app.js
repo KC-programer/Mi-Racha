@@ -176,6 +176,10 @@ const ESQUEMA_SQL = [
 
 const RUTA_SQL_JS = 'https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/';
 
+/* `fetch` no tiene plazo propio: si el CDN se cuelga en vez de rechazar,
+   esperar a sql.js puede dejar el arranque colgado para siempre. */
+const TIEMPO_ESPERA_SQL = 10000;
+
 const BaseDeDatos = {
   modo: 'respaldo',
   db: null,
@@ -189,15 +193,23 @@ const BaseDeDatos = {
     // Si a la primera no se puede, se reintenta una vez: a veces la
     // descarga falla un instante y a la segunda sí sale.
     for (let intento = 1; intento <= 2; intento++) {
+      let temporizador;
       try {
         if (window.sqlJsNoDisponible || typeof initSqlJs !== 'function') {
           throw new Error('sql.js no está disponible');
         }
-        const SQL = await initSqlJs({
-          locateFile: function (archivo) {
-            return RUTA_SQL_JS + archivo;
-          }
-        });
+        const SQL = await Promise.race([
+          initSqlJs({
+            locateFile: function (archivo) {
+              return RUTA_SQL_JS + archivo;
+            }
+          }),
+          new Promise(function (resolve, reject) {
+            temporizador = setTimeout(function () {
+              reject(new Error('sql.js no respondió'));
+            }, TIEMPO_ESPERA_SQL);
+          })
+        ]);
         this.db = new SQL.Database();
         this.db.run(ESQUEMA_SQL);
         lista.forEach(this.insertar, this);
@@ -205,6 +217,10 @@ const BaseDeDatos = {
         return;
       } catch (error) {
         console.warn('Intento ' + intento + ' de iniciar SQLite falló:', error);
+      } finally {
+        // Si la descarga llegó a tiempo, este temporizador ya no sirve:
+        // dejarlo vivo dispararía un rechazo sin nadie que lo escuche.
+        clearTimeout(temporizador);
       }
     }
 
@@ -337,7 +353,7 @@ const BaseDeDatos = {
   },
 
   nombreModo: function () {
-    return this.modo === 'sql' ? 'SQL (SQLite)' : 'modo de respaldo';
+    return this.modo === 'sql' ? 'SQL (SQLite)' : 'respaldo';
   }
 };
 
@@ -488,21 +504,26 @@ function formatearRangoSemana(lunes) {
     formatearDiaCorto(domingo) + '/' + fin[0];
 }
 
-/* Dibuja la cabecera del resumen: el rango de la semana, el total de minutos y
-   cuántos días tienen sesión. Empieza por el rango porque es la parte que tiene
-   que coincidir carácter a carácter con el texto de la opción del selector. */
+/* Reparte la cabecera del resumen en dos líneas: el rango nombra la semana y va
+   en el título; los hechos agregados van debajo. El rango sigue saliendo de
+   'formatearRangoSemana', la misma función que llena el selector, así que no
+   pueden divergir aunque el título añada la palabra 'Semana'. El recuento usa
+   singular solo cuando es uno; el tiempo reutiliza el formateador del historial
+   para que la misma magnitud no tenga dos formatos distintos. */
 function pintarCabeceraResumen(lunes, totales) {
+  document.getElementById('titulo-semana').textContent =
+    'Semana ' + formatearRangoSemana(lunes);
   document.getElementById('resumen-semanal').textContent =
-    formatearRangoSemana(lunes) + ', ' +
-    formatearTiempo(totales.minutos) + ', ' +
-    totales.dias + (totales.dias === 1 ? ' día con sesión' : ' días con sesión');
+    (totales.dias === 1 ? '1 día con sesión' : totales.dias + ' días con sesión') +
+    ' | ' + formatearTiempo(totales.minutos) + ' en total';
 }
 
 /* Dibuja los siete días, de lunes a domingo y aunque no tengan sesión (RF-009):
    un día vacío dentro de una semana con actividad también se ve. Cada día lleva
-   su fecha y el total de sus minutos, y debajo sus sesiones con los avances
-   íntegros. El 'data-id' es lo que permite localizar una sesión concreta y
-   comprobar su texto; la frase y el botón de eliminar no se copian aquí porque el
+   su fecha y el total de sus minutos, y las sesiones con los avances íntegros
+   en la misma línea, a la altura de esa fecha. El 'data-id' permite localizar
+   una sesión concreta y comprobar su texto; la frase y el botón de eliminar no se
+   copian aquí porque el
    resumen no las usa y esa acción es del tablero. */
 function pintarDiasSemana(lunes, grupos) {
   const lista = document.getElementById('lista-dias');
@@ -630,7 +651,7 @@ function pintarRacha(sesiones) {
       ? 'Registra tu primera sesión para empezar'
       : 'Empieza una racha nueva hoy';
   } else {
-    texto = racha === 1 ? 'día de racha' : 'días de racha';
+    texto = racha === 1 ? 'Día de racha' : 'Días de racha';
   }
   document.getElementById('racha-texto').textContent = texto;
 
@@ -647,7 +668,10 @@ function pintarRacha(sesiones) {
 
 /* Dibuja el historial de sesiones. */
 function pintarHistorial(sesiones) {
-  sesiones = BaseDeDatos.listar().slice(0, 5);
+  /* La lista se recorta solo para pintarla. El recuento no se recorta: 'en total'
+     tiene que salir de la misma fuente que los minutos o miente con más de cinco
+     sesiones guardadas. */
+  sesiones = sesiones.slice(0, 5);
   const lista = document.getElementById('lista-sesiones');
   const vacia = document.getElementById('lista-vacia');
   const resumen = document.getElementById('resumen');
@@ -656,8 +680,8 @@ function pintarHistorial(sesiones) {
   vacia.hidden = sesiones.length > 0;
 
   const totales = BaseDeDatos.resumen();
-  resumen.textContent = sesiones.length === 0 ? '' :
-    sesiones.length + (sesiones.length === 1 ? ' sesión, ' : ' sesiones, ') +
+  resumen.textContent = totales.cantidad === 0 ? '' :
+    totales.cantidad + (totales.cantidad === 1 ? ' sesión, ' : ' sesiones, ') +
     formatearTiempo(totales.minutos) + ' de estudio en total';
 
   sesiones.forEach(function (sesion) {
@@ -714,9 +738,13 @@ function pintarResumenInicio() {
   const sesiones = BaseDeDatos.listar();
   const elemento = document.getElementById('resumen-inicio');
   if (sesiones.length === 0) {
-    elemento.textContent = 'Todavía no tienes sesiones registradas.';
+    // Sin sesiones no hay resumen que mostrar: se vacía y se oculta el párrafo
+    // para que no deje un margen colgando bajo el botón de inicio.
+    elemento.textContent = '';
+    elemento.hidden = true;
     return;
   }
+  elemento.hidden = false;
   const racha = calcularRacha(sesiones);
   const totales = BaseDeDatos.resumen();
   elemento.textContent = 'Llevas ' + racha + (racha === 1 ? ' día' : ' días') +
@@ -736,6 +764,18 @@ function pintarTodo(idDestacado) {
       item.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }
+}
+
+/* Aplica el modo en un solo sitio: la clase que manda, el estado del interruptor
+   y el texto que lo acompaña. El sistema solo decide el modo inicial; una vez
+   elegido, la clase tiene que imponerse aunque el sistema diga lo contrario. */
+function pintarModo(claro) {
+  document.body.classList.toggle('modo-claro', claro);
+  document.body.classList.toggle('modo-oscuro', !claro);
+
+  document.getElementById('boton-modo-claro')
+    .setAttribute('aria-checked', claro ? 'true' : 'false');
+  document.getElementById('texto-modo').textContent = claro ? 'Modo claro' : 'Modo oscuro';
 }
 
 function abrirTablero() {
@@ -786,47 +826,24 @@ function conectarEventos() {
     abrirTablero();
   });
 
-  // Cambiar la frase en cualquier momento
+  // Cambiar la frase en cualquier momento. El campo se rellena con la frase
+  // guardada: al recargar, el formulario nace vacío y sin esto se pediría
+  // reescribirla desde cero.
   document.getElementById('boton-cambiar-frase').addEventListener('click', function () {
+    const campo = document.getElementById('frase');
+    campo.value = Almacen.leer(Claves.frase, '');
     mostrarPantalla('intencion');
-    document.getElementById('frase').focus();
+    campo.focus();
   });
 
-  // Alternar modo claro/oscuro
+  // Alternar modo claro/oscuro. El modo ya no se escribe en el pie: el
+  // interruptor y su texto son los que lo dicen, y así el pie vuelve a hablar
+  // solo de la base de datos.
   document.getElementById('boton-modo-claro').addEventListener('click', function () {
-    // 1. Alternar la clase modo-claro en <body>
-    document.body.classList.toggle('modo-claro');
-
-    // 2. Guardar la nueva preferencia en localStorage (si está disponible)
-    //    Usamos 'claro' u 'oscuro' según el estado actual de la clase
-    const modoActual = document.body.classList.contains('modo-claro');
-    const valorModo = modoActual ? 'claro' : 'oscuro';
+    const modoClaro = !document.body.classList.contains('modo-claro');
+    pintarModo(modoClaro);
     if (Almacen.hayPersistencia()) {
-      Almacen.escribir(Claves.modo, valorModo);
-    }
-
-    // 3. Anunciar el cambio usando mostrarMensaje
-    const mensajeElemento = document.getElementById('mensaje-formulario');
-    const textoAnuncio = modoActual ? 'Modo cambiado a claro' : 'Modo cambiado a oscuro';
-    mostrarMensaje(mensajeElemento, textoAnuncio, false);
-
-    // 4. Actualizar atributo aria-checked del botón
-    const botonModo = document.getElementById('boton-modo-claro');
-    botonModo.setAttribute('aria-checked', modoActual);
-
-    // 5. Actualizar el pie #pie-modo para reflejar el modo actual
-    const pie = document.getElementById('pie-modo');
-    const modoSQL = BaseDeDatos.modo;  // 'sql' o 'respaldo'
-    const sqlModoTexto = modoSQL === 'sql' ? 'SQL (SQLite)' : 'respaldo';
-
-    if (modoActual) {
-      if (modoSQL === 'respaldo') {
-        pie.textContent = 'Modo: Claro. Base de datos: respaldo.';
-      } else {
-        pie.textContent = 'Modo: Claro. Base de datos: SQL (SQLite)';
-      }
-    } else {
-      pie.textContent = 'Base de datos: ' + sqlModoTexto;
+      Almacen.escribir(Claves.modo, modoClaro ? 'claro' : 'oscuro');
     }
   });
 
@@ -926,67 +943,27 @@ function conectarEventos() {
 async function iniciar() {
   await BaseDeDatos.iniciar();
 
-  // 1. Leer modo guardado de localStorage
+  // 1. Leer el modo guardado. Sin preferencia, decide el sistema.
   let modoGuardado = null;
   if (Almacen.hayPersistencia()) {
     modoGuardado = Almacen.leer(Claves.modo, null);
   }
 
-  // 2. Determinar modo actual según RF-005
-  const body = document.body;
-  const pie = document.getElementById('pie-modo');
-  const modoSQL = BaseDeDatos.modo;  // 'sql' o 'respaldo'
-  const sqlModoTexto = modoSQL === 'sql' ? 'SQL (SQLite)' : 'respaldo';
-
-  let modoClaro = false;
-  let esModoMemoria = false;
-
+  let modoClaro;
   if (modoGuardado === 'claro') {
     modoClaro = true;
   } else if (modoGuardado === 'oscuro') {
     modoClaro = false;
   } else {
-    // modoGuardado es null: detectar prefers-color-scheme del sistema
-    const media = window.matchMedia('(prefers-color-scheme: light)');
-    if (media.matches) {
-      modoClaro = true;
-      // Si localStorage no está disponible, el modo viene de la detección del sistema
-      // y se avisa en el pie de que la elección se perderá al cerrar
-      if (!Almacen.hayPersistencia()) {
-        esModoMemoria = true;
-      }
-    } else {
-      modoClaro = false;
-    }
+    modoClaro = window.matchMedia('(prefers-color-scheme: light)').matches;
   }
 
-  // Aplicar clase en <body>
-  if (modoClaro) {
-    body.classList.add('modo-claro');
-  } else {
-    body.classList.remove('modo-claro');
-  }
+  // 2. Aplicar el modo y su texto en el selector.
+  pintarModo(modoClaro);
 
-  // 3. Actualizar pie según el estado actual (5 estados posibles)
-  if (modoClaro) {
-    if (modoSQL === 'respaldo') {
-      // Estado (e): Modo degradado sin sql.js
-      // Igual que (b) o (c) pero el pie indica respaldo
-      pie.textContent = 'Modo: Claro. Base de datos: respaldo.';
-    } else if (modoGuardado === 'claro') {
-      // Estado (b): Modo claro guardado en localStorage
-      pie.textContent = 'Modo: Claro. Base de datos: SQL (SQLite)';
-    } else if (esModoMemoria) {
-      // Estado (d): Modo claro degradado sin localStorage
-      pie.textContent = 'Modo: Claro (memoria)';
-    } else {
-      // Estado (c): Modo claro por detección del sistema
-      pie.textContent = 'Modo: Claro (sistema)';
-    }
-  } else {
-    // Modo oscuro (estado a)
-    pie.textContent = 'Base de datos: ' + sqlModoTexto;
-  }
+  // 3. El pie habla solo de la base de datos; el modo lo dice el selector.
+  const pie = document.getElementById('pie-modo');
+  pie.textContent = 'Base de datos: ' + BaseDeDatos.nombreModo();
 
   // Si ya hay una frase guardada se salta al tablero: la pantalla de inicio
   // solo aparece la primera vez. Cambiar la frase más adelante no pasa por

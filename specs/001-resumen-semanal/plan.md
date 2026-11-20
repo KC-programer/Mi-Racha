@@ -33,7 +33,7 @@ RF por paso: 1 → RF-002 · 2 → RF-005, RF-006, RF-007, RF-009 · 3 → RF-00
 - `agruparSesionesPorDia(sesiones)` → `Map` `fecha` → sesiones **en el orden de entrada**; por eso `Map` y no objeto: el orden de `listar()` ya es el que RF-009 pide dentro de un día.
 - `formatearDiaCorto(clave)` → `dd/mm`, con los ceros que ya trae la clave.
 - `formatearRangoSemana(lunes)` → regla única de RF-008: dos `formatearDiaCorto` y el año en los dos extremos solo si difieren.
-- `pintarCabeceraResumen(lunes, totales)` → `#resumen-semanal`.
+- `pintarCabeceraResumen(lunes, totales)` → `#titulo-semana` (`Semana ` + el rango) y `#resumen-semanal` (días con sesión y tiempo total).
 - `pintarDiasSemana(lunes, grupos)` → `#lista-dias`, los siete `<li class="dia">` de lunes a domingo.
 - `poblarSelectorSemana(semanas, elegida)` → `#selector-semana`; `option.value` es la clave del lunes y el texto sale de `formatearRangoSemana`. Nunca `disabled`.
 - `pintarResumenSemanal()` → orquestador: lista, relee `claveDeHoy()`, calcula, elige semana y pinta. La llaman `abrirResumenSemanal` y el `change` del selector.
@@ -42,7 +42,7 @@ RF por paso: 1 → RF-002 · 2 → RF-005, RF-006, RF-007, RF-009 · 3 → RF-00
 ## 3. Decisiones que la spec deja abiertas
 
 1. **Minutos con `formatearTiempo`, no el número desnudo.** El historial ya la usa (`#resumen`, `.sesion__minutos`), así que el usuario no ve dos formatos de la misma magnitud, y no hace falta función nueva. No redondea ni pierde minutos (`150` → `2 h 30 min`, `0` → `0 min`, y el estado (a) sigue mostrando un cero inequívoco). *Descartada:* número sin unidad, que deja la unidad para la fase visual.
-2. **`resumen-semanal`** como `id` de la cabecera del resumen, en paralelo con `#resumen` del historial. *Descartada:* `cabecera-resumen`, más corta y menos paralela.
+2. **`resumen-semanal`** como `id` de la cabecera del resumen, en paralelo con `#resumen` del historial. *Descartada:* `cabecera-resumen`, más corta y menos paralela. Decisión posterior del cliente: repartida la cabecera, ese `id` lo hereda el subtítulo y el título nuevo es `titulo-semana`.
 3. **`lista-dias`** como `id` de la lista de días, en paralelo con `#lista-sesiones`. *Descartada:* `lista-dias-semana`, redundante dentro de la pantalla.
 4. **`formatearDiaCorto` y `formatearRangoSemana` en capa 5**, junto a `formatearTiempo`. *Descartada:* capa 2, que tiene `fechaLegible`. Son texto de pantalla, y la regla del año solo debe vivir en un sitio (criterio 9: mismo texto en cabecera y selector).
 5. **`calcularTotalesSemana` en capa 5**, no en la 4: el banner de la capa 4 dice "CÁLCULO DE LA RACHA" y sus reglas son las de la racha. *Descartada:* una capa "Cálculos" nueva, que además rompería el índice de la cabecera de `app.js`.
@@ -51,7 +51,7 @@ RF por paso: 1 → RF-002 · 2 → RF-005, RF-006, RF-007, RF-009 · 3 → RF-00
 8. **Entrada y salida con la misma clase `boton boton--suave`**, así que la simetría del botón de volver ya es estructural; el peso visual se decide después.
 9. **Al reabrir, `abrirResumenSemanal` pone `semanaSeleccionada = null`** y `pintarResumenSemanal` la sustituye por la semana inicial canónica: es lo que pide la última frase de RF-005. *Descartada:* conservar la selección anterior si sigue siendo válida; cumpliría la primera mitad de RF-005 y contradiría la última.
 
-Los demás identificadores los nombra la spec: `pantalla-resumen-semanal` (RF-001, y en `Pantallas` como `'resumen-semanal'`), `encabezado-resumen-semanal` (RF-001, `class="titulo"` y `tabindex="-1"`), `boton-ver-resumenes` (RF-004), `selector-semana` (RF-006), `boton-volver-tablero` (RF-011) y `data-id` por sesión (RF-009).
+Los demás identificadores los nombra la spec: `pantalla-resumen-semanal` (RF-001, y en `Pantallas` como `'resumen-semanal'`), `encabezado-resumen-semanal` (RF-001, `class="titulo"` y `tabindex="-1"`), `boton-ver-resumenes` (RF-004), `selector-semana` (RF-006), `titulo-semana` (decisión posterior del cliente), `boton-volver-tablero` (RF-011) y `data-id` por sesión (RF-009).
 
 ## 4. Trampas del proyecto que esta implementación toca
 

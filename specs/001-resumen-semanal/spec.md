@@ -103,7 +103,7 @@ Si **no hay ninguna sesión guardada**, o si toda la actividad está en la seman
 
 El rango se escribe **`dd/mm - dd/mm`**, con ceros a la izquierda. **Solo cuando los años del lunes y del domingo difieren** —lo que ocurre únicamente en el cruce de Año Nuevo— se escribe **`dd/mm/aaaa - dd/mm/aaaa`**, con el año en los dos extremos. En un cruce de mes dentro del mismo año (`28/09 - 04/10`) los años **no** difieren y el rango va **sin** año.
 
-**Esta misma regla se aplica a la cabecera del resumen y a todas las opciones del selector.** No hay ninguna otra variante.
+**Esta misma regla se aplica al título del resumen (`Semana <rango>`) y a todas las opciones del selector.** No hay ninguna otra variante. El rango dentro del título es idéntico, carácter a carácter, al texto de la opción seleccionada.
 
 Para construirla se parte de la clave `"AAAA-MM-DD"`, no de una cadena ISO: `partes = clave.split('-')`, y el tramo es `partes[2] + '/' + partes[1]`, añadiendo `'/' + partes[0]` solo si difieren los años. **No** se usa `toLocaleDateString` para obtener `dd/mm`: medido en el navegador con `es-ES`, devuelve `28/9` y `3/1`, con el mes sin ceros. El almacenamiento sigue siendo `"AAAA-MM-DD"`.
 
@@ -133,11 +133,13 @@ En esta fase funcional solo se define la **jerarquía de la información**, que 
 
 1. Encabezado de pantalla (`#encabezado-resumen-semanal`).
 2. Selector de semana (`#selector-semana`) con su etiqueta.
-3. Cabecera del resumen: rango, total de minutos, días con sesión.
+3. Cabecera del resumen: un título con `Semana ` y el rango, y debajo un subtítulo con los días con sesión y el tiempo total, separados por ` | `.
 4. Lista de días, de lunes a domingo.
 5. Botón "Volver al tablero" (`#boton-volver-tablero`).
 
 Este orden debe reflejarse en el DOM. La pasada visual con `frontend-design` viene después.
+
+**Decisión posterior del cliente (fuera del alcance original de esta spec):** la cabecera, que aquí era una sola línea de hechos, se reparte en dos elementos —`#titulo-semana` y `#resumen-semanal`— para que el rango se lea como título y los totales como subtítulo. El rango sigue saliendo de `formatearRangoSemana` y el tiempo de `formatearTiempo`; no hay dato, clave ni cálculo nuevo.
 
 ### RF-012 · Estilos, responsive y modo oscuro
 
@@ -163,7 +165,7 @@ Todo color, radio, sombra y ancho sale de **variables CSS**, nunca de literales.
 - **(a) Sin actividad.** Sin sesiones guardadas, o con toda la actividad en la semana en curso: se muestra la última semana cerrada con total de minutos 0 y número de días con sesión 0, y los siete días sin ítems de sesión; el selector ofrece una sola opción, esa, y no puede moverse; el selector no se oculta ni lleva `disabled`.
 - **(b) Una sola semana disponible.** Cuando solo existe una semana con actividad: `<select>` con una única opción, **sin `disabled`**.
 - **(c) Primera sesión en la semana en curso.** Si el mínimo de `sesion.fecha` cae dentro de la semana en curso, el rango arranca en la primera semana cerrada que tenga actividad; si no existe ninguna, aplica **(a)**. Nunca se ofrece la semana en curso.
-- **(d) Regla del rango.** `dd/mm - dd/mm`; solo si difieren los años, `dd/mm/aaaa - dd/mm/aaaa`. Misma regla en cabecera y selector.
+- **(d) Regla del rango.** `dd/mm - dd/mm`; solo si difieren los años, `dd/mm/aaaa - dd/mm/aaaa`. Misma regla en el título del resumen y en el selector.
 - **(e) Semana inicial.** La **definición canónica** de arriba: última semana cerrada con actividad; si no hay ninguna, la última cerrada con totales 0.
 
 ## Modos degradados
@@ -196,11 +198,11 @@ Verificables en navegador o con la consola: el proyecto **no tiene test runner**
 6. **Sin actividad.** Totales 0, cero días con sesión, los siete días sin ítems, selector con una sola opción que no puede moverse y no se oculta. Sin mensaje sustitutorio.
 7. **Una sola semana disponible.** Selector con una única opción, sin `disabled`, y el resumen se ve correctamente.
 8. **Primera sesión en la semana en curso.** Dos montajes: (a) una sesión de hoy **más** otra en una semana cerrada anterior → el rango arranca en la primera semana cerrada con actividad, no en la semana en curso; (b) solo la sesión de hoy → aplica el caso sin actividad. Nunca se ofrece la semana en curso.
-9. **Regla del rango.** Mismo texto en cabecera y selector. `28/09 - 04/10` sin año. Cruce de Año Nuevo: `28/12/2026 - 03/01/2027` con año en ambos extremos. Construido desde la clave con `split('-')`.
+9. **Regla del rango.** El rango del título (`Semana <rango>`) es idéntico al texto de la opción del selector. `28/09 - 04/10` sin año. Cruce de Año Nuevo: `28/12/2026 - 03/01/2027` con año en ambos extremos. Construido desde la clave con `split('-')`.
 10. **Agrupación y avances.** Cada día agrupa por `sesion.fecha`. Días de lunes a domingo, los siete siempre. Los avances son **idénticos a `sesion.avances`**, con acentos, saltos de línea y emoji; se conservan los saltos (`pre-wrap`) y las palabras largas se envuelven sin cortarse (`overflow-wrap: anywhere`). Sin `slice`, `substring`, `substr` ni truncado **sobre `sesion.avances`**. Avances vacíos → "Sin avances anotados.". No se muestra la frase ni la hora de creación.
 11. **Comprobación literal de los avances.** Con la sesión ya guardada, localizar en `BaseDeDatos.listar()` la sesión por su `id` (con `String(...)` en ambos lados) y comparar su `.avances` con el `textContent` del bloque pintado en la pantalla de resumen, identificada por su `data-id`. **No** se compara contra `#avances.value`, porque `app.js` limpia ese campo al final del submit y la comparación daría siempre `false`.
 12. **Texto largo.** Un `avances` de 2000 caracteres sin espacios, a ≤ 480px, no desborda ni se corta.
-13. **Recalcular.** Cambian los datos, se vuelve a entrar y el resumen refleja el cambio. Cambiar el selector actualiza a la vez el rango de la cabecera, el total de minutos, el número de días con sesión y la lista de días.
+13. **Recalcular.** Cambian los datos, se vuelve a entrar y el resumen refleja el cambio. Cambiar el selector actualiza a la vez el rango del título, el subtítulo con el tiempo y los días con sesión, y la lista de días.
 14. **Sin arranque automático.** Tras cargar la app, `pantalla-resumen-semanal` está oculta y su contenido solo aparece tras pulsar `#boton-ver-resumenes`.
 15. **Repintado solo por acción.** Con la pantalla abierta, guardar una sesión o cambiar el día no repinta el resumen por su cuenta. Al volver a entrar tras cruzar medianoche, corresponde a la última semana cerrada de ese momento.
 16. **Cambio de hora.** En una zona con cambio de hora, el resumen de una semana que contiene el domingo del cambio muestra los siete días correctos y cuenta bien los días con sesión.

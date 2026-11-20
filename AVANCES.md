@@ -4,19 +4,21 @@ Memoria y reporte de avances entre sesiones. No más de 75 líneas: lo que no ap
 
 ## Estado actual
 
-Invariantes: lo que no se toca sin querer, con el antes y el después.
-
 - **Hoy hay cuatro pantallas.** La cuarta, el resumen semanal, se entra desde la
   tarjeta de historial y vuelve al tablero sin repintarlo, para que sobrevivan el
   scroll del listado y los valores del formulario.
-- **El historial muestra solo las 5 sesiones más recientes.** Se limita a 5 en
-  `pintarHistorial` usando `.slice(0, 5)` sobre `BaseDeDatos.listar()`, que sigue
-  trayendo todas las sesiones para racha y resumen semanal. Las sesiones más
-  antiguas se conservan guardadas pero no aparecen en el listado principal.
+- **La cabecera es un bloque de esquinas rectas:** selector de modo arriba a la
+  izquierda, frase centrada y más grande, y «Cambiar frase» abajo a la derecha.
+  El pie ya solo dice la base de datos.
+- **El tablero va en una sola columna:** la racha con la cifra a la izquierda y
+  «Día de racha» con la nota a la derecha; después «Nueva sesión» a todo el ancho,
+  con fecha y minutos a la izquierda y avances a la derecha; y el historial debajo.
+- **El historial muestra solo las 5 sesiones más recientes.** `pintarHistorial`
+  recorta con `.slice(0, 5)` lo que le pasa `pintarTodo`; el resumen cuenta todas
+  las guardadas para que «en total» no mienta.
 - **El resumen semanal se filtra en el cliente** sobre `BaseDeDatos.listar()`: sin
-  consulta nueva, sin método nuevo en `BaseDeDatos` y sin clave nueva en
-  `localStorage`, así que los modos degradados no se tocan. La semana elegida es
-  estado en memoria: al reabrir, la última semana cerrada con actividad.
+  consulta ni método nuevos ni clave de `localStorage`, así que los modos degradados
+  no se tocan. La semana elegida es estado en memoria: la última cerrada con actividad.
 - **Está publicada en GitHub Pages:** <https://kc-programer.github.io/Mi-Racha/>.
   Se abre con doble clic en el ordenador o con esa URL en el móvil.
 - **El estado vive en el `localStorage` de cada navegador y cada origen.** Lo
@@ -34,8 +36,8 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
   un comentario no vuelva a mentir sobre el archivo que lo contiene.
 - **El texto que va sobre una variable de color necesita su propia variable.**
   El mismo tono se invierte entre modos, así que un literal se queda corto:
-  `color: #fff` daba 6,29:1 en claro pero 2,98:1 en oscuro. Ahora es
-  `--sobre-primario`, blanca en claro y `#171a23` en oscuro (5,83:1).
+  `color: #fff` daba 6,29:1 en claro pero 2,98:1 en oscuro. Ahora manda
+  `--sobre-primario`, beige cálido en claro y casi negro en oscuro, legible en ambos.
 - **`AGENTS.md` ancla el código por nombre, nunca por número de línea.** Se
   intentó al revés y falló dos veces en una sola sesión (+23 y +2 líneas
   descolocaron 19 referencias): un número viejo no avisa de que lo está y manda
@@ -50,7 +52,14 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
   una pregunta que el tablero no puede responder sin mezclar la vista diaria con la
   agregación semanal. La frase dejó de ser una excepción y pasó a ser la regla.
 - **D5 · Principio 2 de la constitution:** se reescribe para que ya no afirme que la única red es `sql.js`; ahora nombra la tipografía como segunda descarga y dice que ninguna de las dos transporta un dato. Se justifica porque la fuente es realce visual, no camino de datos; un aviso que no se pueda detectar sería una mentira. Se anota el antes y el después en `specs/002-pasada-visual/spec.md` y aquí.
-- **D6 · Minutos duplicados en el resumen:** excepción al RF‑009 de la spec 001. Si una sola sesión en el día → se muestra solo el total; si hay dos o más sesiones → total + cada sesión muestra su tiempo. Se registra porque rompe un RF de una spec anterior, pero se paga a cambio de quitar redundancia visible. Queda registrado en `specs/002-pasada-visual/spec.md` y aquí, con el coste de excepción a un RF validado.
+- **D6 · Minutos duplicados en el resumen:** excepción al RF‑009 de la spec 001. Si una sola sesión en el día → se muestra solo el total; si hay dos o más sesiones → total + cada sesión muestra su tiempo. Se registra porque rompe un RF de una spec anterior, pero se paga a cambio de quitar redundancia visible. Queda registrado en `specs/002-pasada-visual/spec.md` y aquí, con el coste de excepción a un RF validado.
+- **El modo elegido manda sobre el sistema.** `modo-claro` y `modo-oscuro`
+  definen la paleta completa; el `@media` solo pinta el arranque. Faltaba la
+  clase oscura y el modo guardado podía contradecir la pantalla.
+- **D7 · Principio 6 sin aviso de degradación.** Antes: «los avisos se anuncian»;
+  ahora: memoria sin aviso y pie solo con la base de datos; cerrar borra sin avisar.
+- **D8 · Arranque acotado sin aviso.** `BaseDeDatos.iniciar()` corre `initSqlJs` contra un `Promise.race` de 10 s por intento: un `fetch` colgado antes dejaba el pie vacío y los botones muertos para siempre. El cliente eligió 10 s también para el reintento, sin texto provisional (el pie sigue vacío hasta los 20 s) ni aviso aparte; no hubo spec porque es arreglo del arranque, no función nueva.
+- **D9 · `nombreModo()` manda en el pie.** Antes `iniciar()` decidía el texto con un ternario y el método devolvía «modo de respaldo», que no coincidía con lo visible. Ahora `iniciar()` llama a `BaseDeDatos.nombreModo()`, que devuelve `respaldo`: una sola fuente, mismo texto carácter a carácter y sin la redacción divergente.
 
 ## Aprendizajes y errores a evitar
 
@@ -59,12 +68,8 @@ Invariantes: lo que no se toca sin querer, con el antes y el después.
 - **Confundir "semana cerrada" con la en curso** es error fácil: la semana en curso cambia l-d, la cerrada no se resume hasta la siguiente; usan claves `AAAA-MM-DD`, nunca `Intl`.
 - **Olvidar un `class` deja la regla CSS sin aplicar:** pasó con `<ol id="lista-dias">` y `.dias`; la regla existe pero ningún elemento la toma.
 - **El selector de interfaz nunca lleva `disabled`:** su ausencia es información, no descuido.
+- **Un texto visible delata lo que la lógica no fuerza:** el selector habría mentido sobre el modo real; la etiqueta obligó a cerrar el hueco.
 
 ## Próximos pasos
 
-- **T9:** Manual de verificación en navegador — al carecer el proyecto de test runner automatizado, la única verificación real es abrir `index.html` y recorrer las 4 pantallas, probar el camino feliz y errores, desconectar internet para verificar modo degradado, guardar sesiones y confirmar persistencia de racha y modo.
-- **T10:** Consideraciones de compatibilidad y degradados — la app debe funcionar en los tres escenarios degradados (sin `sql.js`, sin `localStorage`, fallo arranque SQLite). El modo claro se mantiene mediante variables CSS locales y el pie avisa siempre del modo en uso. No se añaden build, `package.json` ni pasos de compilación.
-- **La app falla en silencio si el arranque no termina:** en `iniciar()` el pie, el resumen y `conectarEventos()` van después de `await BaseDeDatos.iniciar()`; si el JS no carga, el CDN de `sql.js` se cuelga
-  o el `.wasm` no llega, quedan un botón muerto y un pie vacío, y el `<noscript>` solo cubre JavaScript desactivado. Aplazado a la próxima.
-- **`BaseDeDatos.nombreModo()` no se llama desde ningún sitio** y devuelve `'modo de respaldo'`, que no es el texto que usa el pie: decidir si se borra o se usa de verdad (ver trampa 10 de `AGENTS.md`).
-- **`pintarHistorial` ignora su parámetro** y vuelve a llamar a `BaseDeDatos.listar()`; el resumen mezcla el recuento recortado (máximo 5) con los minutos de todas las sesiones, y puede leerse como "5 sesiones, 40 h" con muchas más guardadas. Decidir cuál es el texto correcto.
+- **Pendiente para V2 · `app.js` no carga y la app se queda sin arranque:** si el archivo falta o tiene un error de sintaxis, no se registra `DOMContentLoaded` y ningún código de `app.js` puede remediarlo; lo resolverá la idea prevista para la V2.

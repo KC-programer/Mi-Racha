@@ -35,10 +35,9 @@ ese momento, y una pantalla nueva solo entra con un argumento más fuerte que
 «estaría bien»: responder a una pregunta que ninguna de las demás responde.
 
 **6. Declara su estado real.**
-El pie dice qué base de datos usa, los avisos se anuncian y los errores nunca
-se tragan en silencio.
-Degradar en silencio enseña a desconfiar de todo lo que la app muestra. Nada
-de `catch` mudo: o se comunica, o no se captura.
+El pie dice qué base de datos usa; los errores nunca se tragan en silencio.
+Ningún `catch` mudo: o se comunica, o no se captura. El almacenamiento en
+memoria no se anuncia: lo descartó el cliente, aunque cerrar borre lo guardado.
 
 **7. Accesible de serie.**
 Teclado, foco visible, contraste suficiente, `aria-live` en los avisos, y

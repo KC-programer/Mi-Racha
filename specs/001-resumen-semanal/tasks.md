@@ -67,7 +67,7 @@ id="boton-ver-resumenes" class="boton boton--suave">Ver resúmenes…</button>`.
 Añade la `<section class="pantalla" id="pantalla-resumen-semanal" hidden
 aria-labelledby="encabezado-resumen-semanal">` con el orden de RF-011:
 `<h1 class="titulo" id="encabezado-resumen-semanal" tabindex="-1">`, `label`
-+ `#selector-semana`, `<p id="resumen-semanal">`, `<ol id="lista-dias">` y
++ `#selector-semana`, `<h2 id="titulo-semana">`, `<p id="resumen-semanal">`, `<ol id="lista-dias">` y
 `<button type="button" class="boton boton--suave" id="boton-volver-tablero">Volver
 al tablero</button>`. Y **en la misma tarea** añade `'resumen-semanal'` a
 `Pantallas`.
@@ -120,20 +120,20 @@ ya haya días pintados.
 filtrar por `lunesDeSemana(s.fecha) === semanaSeleccionada`; pintar cabecera y los
 siete días. Dentro de cada día reutiliza `.sesion__fila`, `.sesion__minutos`,
 `.sesion__avances` y `.sesion__vacio`, con `data-id` en el `<li>` de la sesión, sin
-frase, sin hora y sin botón de eliminar. El texto de la cabecera sale de
-`formatearRangoSemana` y los minutos de `formatearTiempo`. Todo con
-`createElement` y `textContent`.
+frase, sin hora y sin botón de eliminar. El título sale de
+`formatearRangoSemana` con el prefijo `Semana `, y el subtítulo del recuento de
+días y `formatearTiempo`. Todo con `createElement` y `textContent`.
 
 **RF:** RF-005, RF-007, RF-008, RF-009, RF-010, RF-011.
 
 **Hecho cuando:** con la sección visible a mano, `pintarResumenSemanal()` pinta:
-- sin sesiones: siete días, total `0 min`, `0 días con sesión`, selector con una
-  sola opción y **sin** `disabled`, y ningún mensaje sustitutorio;
+- sin sesiones: siete días, subtítulo `0 días con sesión | 0 min en total`,
+  selector con una sola opción y **sin** `disabled`, y ningún mensaje sustitutorio;
 - con las tres sesiones de T2 **y la fecha del sistema fijada a `2026-10-05`
-  (lunes)**: dos opciones, la última `28/09 - 04/10`, el texto de la cabecera
-  **idéntico** al de esa opción, los días de lunes a domingo en orden, el 30/09 con
-  su sesión y el 04/10 con 0. Ojo: con la fecha real del sistema el selector puede
-  tener **una** sola opción, y eso también es correcto;
+  (lunes)**: dos opciones, la última `28/09 - 04/10`, el rango del título
+  `Semana 28/09 - 04/10` **idéntico** al de esa opción, los días de lunes a domingo
+  en orden, el 30/09 con su sesión y el 04/10 con 0. Ojo: con la fecha real del
+  sistema el selector puede tener **una** sola opción, y eso también es correcto;
 - el bloque de avances de la sesión del 30/09 cumple
   `String(sesion.avances) === String(document.querySelector('#lista-dias
   [data-id="' + id + '"] .sesion__avances').textContent)`, con la sesión
@@ -161,8 +161,8 @@ al arranque, ni al submit del formulario, ni al `iniciar`.
 - pulsar "Ver resúmenes…" muestra la pantalla, oculta el tablero y deja el foco
   en el encabezado (comprobable en el panel de accesibilidad o con
   `document.activeElement.id`);
-- cambiar el selector actualiza a la vez el rango de la cabecera, el total de
-  minutos, el número de días y la lista de días;
+- cambiar el selector actualiza a la vez el rango del título, el subtítulo con
+  el tiempo y los días, y la lista de días;
 - desplazar la lista del historial, ir al resumen y volver conserva el
   `scrollTop` de `.sesiones`, los valores de fecha, minutos y avances del
   formulario, `#frase-actual` y `#mensaje-formulario`, y el foco vuelve al botón;

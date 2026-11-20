@@ -13,7 +13,7 @@ Eventos y en el CSS.
 
 ## T1. Añadir `modo: 'miRacha:modo'` al objeto `Claves` · **Hecha**
 
-**Archivos:** `app.js`, objeto `Claves`, línea 21-24.
+**Archivos:** `app.js`, objeto `Claves`.
 
 **Qué hace:** añade la propiedad `modo: 'miRacha:modo'` al objeto `Claves`. Es la
 única clave nueva que se introduce en `localStorage` para la preferencia de modo.
@@ -28,24 +28,22 @@ que ya funcionara.
 
 ---
 
-## T2. Añadir botón `#boton-modo-claro` en `index.html` · **Hecha**
+## T2. Añadir el interruptor `#boton-modo-claro` en `index.html` · **Hecha**
 
-**Archivos:** `index.html`, después de `#boton-cambiar-frase` (línea 78-80).
+**Archivos:** `index.html`, bloque de la frase del tablero.
 
-**Qué hace:** añade un botón tipo interruptor (slider) en la zona superior del
-tablero, al lado derecho del botón "Cambiar frase". El botón debe tener:
-- `type="button"` y clase `boton boton--suave` (misma clase que el botón
-  cambiar-frase y ver-resúmenes).
-- `aria-checked` que refleje el estado actual (`true` = modo claro, `false` =
-  modo oscuro).
-- Un texto accesible para lectores de pantalla (ej. "Modo claro").
+**Qué hace:** añade un interruptor deslizante en la esquina superior izquierda del
+bloque de la frase, con el texto del modo en uso a su lado. El botón debe tener:
+- `type="button"`, `role="switch"` y `aria-checked` (`true` = claro, `false` =
+  oscuro).
+- Un texto visible `#texto-modo` que diga «Modo claro» o «Modo oscuro».
+- Clase `interruptor`, no `boton boton--suave`: su forma comunica estado, no acción.
 
 **RF:** RF-001. **Ninguna más.**
 
-**Hecho cuando:** en el navegador, al inspeccionar la zona superior del tablero,
-aparece `#boton-modo-claro` después de `#boton-cambiar-frase`, con las clases
-indicadas y `type="button"`. El botón no está dentro del formulario de sesión y no
-interfiere con su funcionamiento. La app abre igual que antes.
+**Hecho cuando:** en el navegador, el interruptor está arriba a la izquierda del
+bloque de la frase, con `role="switch"`, `aria-checked` y el texto del modo a su
+lado. Está fuera del formulario de sesión y no interfiere con «Cambiar frase».
 
 ---
 
@@ -82,7 +80,7 @@ cuando el sistema está en modo claro y el toggle la activa manualmente.
 
 ## T4. Modificar `iniciar()` en `app.js` para detectar y aplicar el modo · **Hecha**
 
-**Archivos:** `app.js`, función `iniciar()`, línea 886-910.
+**Archivos:** `app.js`, función `iniciar()`.
 
 **Qué hace:** modificar la función de arranque para:
 1. Leer `miRacha:modo` de `localStorage` mediante `Almacen.leer(Claves.modo)`.
@@ -92,21 +90,17 @@ cuando el sistema está en modo claro y el toggle la activa manualmente.
    - Si nada de lo anterior está disponible → default oscuro.
 3. Añadir la clase `modo-claro` en `<body>` si el modo es claro, o quitarla si es
    oscuro.
-4. Actualizar el pie `#pie-modo` con el texto correspondiente:
-   - Modo oscuro normal: `Base de datos: SQL (SQLite)`.
-   - Modo claro guardado: `Modo: Claro. Base de datos: SQL (SQLite)`.
-   - Modo claro por detección del sistema: `Modo: Claro (sistema)`.
-   - `localStorage` bloqueado: `Modo: Claro (memoria)` + aviso de que la elección se
-     perderá al cerrar.
+4. Dejar el pie `#pie-modo` intacto: sigue diciendo solo la base de datos, también
+   con `localStorage` bloqueado. El modo lo anuncia el selector, sin aviso de pérdida.
 5. Mantener los modos degradados: si `sql.js` no carga o `localStorage` está
    bloqueado, la app arranca y el modo se mantiene por la ruta definida en RF-004.
 
-**RF:** RF-005, RF-008. **Ninguna más.**
+**RF:** RF-005, RF-004. **Ninguna más.**
 
 **Hecho cuando:** al recargar la página, el modo se mantiene según la preferencia
-(`localStorage` > sistema > default oscuro). El pie `#pie-modo` muestra el texto
-correcto en cada caso. Con `localStorage` bloqueado, el pie avisa y el modo viene
-de la detección del sistema. La clase `modo-claro` se añade/elimina en `<body>`
+(`localStorage` > sistema > default oscuro). El pie `#pie-modo` sigue diciendo solo
+la base de datos en todos los casos; con `localStorage` bloqueado no avisa y el modo
+viene de la detección del sistema. La clase `modo-claro` se añade/elimina en `<body>`
 correctamente. La app arranca igual que antes en modo oscuro si no hay preferencia
 guardada.
 
@@ -114,21 +108,17 @@ guardada.
 
 ## T5. Añadir lógica de toggle en `conectarEventos()` en `app.js` · **Hecha**
 
-**Archivos:** `app.js`, función `conectarEventos()`, dentro de la capa 6, después del
-listener del botón "Cambiar frase" (línea 793).
+**Archivos:** `app.js`, función `conectarEventos()`, dentro de la capa 6.
 
 **Qué hace:** añadir event listener al botón `#boton-modo-claro` que, al pulsarse:
-1. Alternar la clase `modo-claro` en `<body>`: `document.body.classList.toggle('modo-claro')`.
+1. Actualizar la clase de `<body>`, el `aria-checked` y el texto `#texto-modo` con
+   `pintarModo()`, la única función que decide los tres a la vez.
 2. Guardar la preferencia en `localStorage` bajo `miRacha:modo` con valor `"claro"` u
-   `"oscuro"` (comprobando `body.classList.contains('modo-claro')` después del toggle).
-3. Si `localStorage` está bloqueado, no fallar: usar detección `prefers-color-scheme`
-   y no causar error en la actualización del pie (la lógica de actualización ya está en
-   `inicar()`).
-4. Anunciar el cambio usando `mostrarMensaje(document.getElementById('mensaje-formulario'),
-   'Modo cambiado a claro'/'Modo cambiado a oscuro', false)` con `role="alert"` y
-   `aria-live="polite"`.
-5. Actualizar el atributo `aria-checked` del botón (`true` = modo claro, `false` = modo
-   oscuro).
+   `"oscuro"`.
+3. Si `localStorage` está bloqueado, no fallar: el modo cambia en memoria, se pierde
+   al cerrar y no se anuncia la pérdida.
+4. No anunciar el cambio en el mensaje del formulario: lo dicen el `aria-checked` y
+   el texto visible del interruptor.
 
 **Restricción:** el toggle no interfiere con el botón "Cambiar frase": cada uno tiene
 su propia acción independiente. Se usa `function` y concatenación, sin arrow
@@ -137,11 +127,11 @@ functions que rompan el binding de `this` en callbacks cercanos.
 **RF:** RF-001 (toggle y persistencia). **Ninguna más.**
 
 **Hecho cuando:** al pulsar el botón `#boton-modo-claro`:
-- La clase `modo-claro` se añade o se quita en `<body>`.
-- El pie `#pie-modo` actualiza su texto a `Modo: Claro` o `Modo: Oscuro`.
+- La clase `modo-claro` o `modo-oscuro` se aplica en `<body>`.
+- `#texto-modo` pasa a «Modo claro» o «Modo oscuro»; el pie `#pie-modo` no cambia.
 - La preferencia se guarda en `localStorage` y persiste tras recargar.
-- Si `localStorage` está bloqueado, el modo cambia visualmente (clase en `<body>`)
-  pero el pie avisa de que se perderá al cerrar.
+- Si `localStorage` está bloqueado, el modo cambia visualmente y se pierde al cerrar,
+  sin aviso.
 - El atributo `aria-checked` del botón refleja el estado actual.
 - El botón "Cambiar frase" sigue funcionando igual, sin conflictos.
 
@@ -149,18 +139,17 @@ functions que rompan el binding de `this` en callbacks cercanos.
 
 ## T6. Mantener modos degradados funcionando
 
-**Archivos:** `app.js`, `estilosCSS`, `index.html` (verificación global).
+**Archivos:** `app.js`, `estilos.css`, `index.html` (verificación global).
 
 **Qué hace:** asegurar que las tres situaciones degradadas siguen funcionando con
 el modo claro activo:
 - **`sql.js` no carga** (sin red o CDN caído): `modo = 'respaldo'`, array en memoria.
-  El modo claro se mantiene mediante variables CSS locales; el pie indica `Modo: Claro`
-  y `Base de datos: SQL (SQLite)` (o respaldo si falló el arranque).
+  El modo claro se mantiene mediante variables CSS locales; el pie indica
+  `Base de datos: respaldo` y el selector sigue diciendo el modo en uso.
 - **Fallo del primer arranque de SQLite**: un reintento y luego respaldo. El modo
   claro persiste en `localStorage` o en la detección del sistema.
 - **`localStorage` bloqueado**: `Almacen` usa memoria; el modo vuelve a la detección
-  de `prefers-color-scheme` y se avisa en el pie de que la elección se perderá al
-  cerrar.
+  de `prefers-color-scheme` y la pérdida al cerrar no se anuncia.
 
 En modo degradado, el cambio de modo no rompe la UI: las variables CSS siguen
 teniendo valores, y el botón sigue funcionando sobre ellas.
@@ -169,8 +158,8 @@ teniendo valores, y el botón sigue funcionando sobre ellas.
 
 **Hecho cuando:** probando los tres escenarios degradados (Network → Offline en
 DevTools, navegador con `localStorage` bloqueado, y arranque normal) la app
-arranca, el botón modo es visible y operable, y el pie informa adecuadamente en
-cada caso.
+arranca, el interruptor es visible y operable, el pie informa de la base de datos
+y el selector del modo, sin aviso de pérdida en ningún caso.
 
 ---
 
@@ -181,13 +170,12 @@ cada caso.
 **Qué hace:** verifica en navegador o con la consola los 10 criterios de aceptación
 de la spec 003:
 
-1. **Ubicación del botón.** `#boton-modo-claro` está dentro de la zona superior del
-   tablero, después de `#boton-cambiar-frase` y antes de ningún otro elemento, con
-   clase `boton boton--suave` y `type="button"`.
-2. **Alternancia de modo.** Al pulsar el botón, la clase `modo-claro` se añade/elimina
-   en `<body>` o las variables CSS se redefinen en `@media (prefers-color-scheme: light)`,
-   y el pie `#pie-modo` actualiza su texto a `Modo: Claro` o `Modo: Oscuro` en
-   consecuencia.
+1. **Ubicación del interruptor.** `#boton-modo-claro` está en la esquina superior
+   izquierda del bloque de la frase, con `type="button"`, `role="switch"` y
+   `#texto-modo` a su lado.
+2. **Alternancia de modo.** Al pulsar el interruptor, se aplica `modo-claro` o
+   `modo-oscuro` en `<body>`, cambia `aria-checked` y `#texto-modo` pasa a «Modo
+   claro» o «Modo oscuro». El pie no cambia: solo informa de la base de datos.
 3. **Persistencia.** Recargar la página con el modo claro guardado en `localStorage`
    mantiene el modo claro tras la recarga. Igual para el modo oscuro.
 4. **Detección de sistema.** Si no hay preferencia guardada, al abrir la app en un
