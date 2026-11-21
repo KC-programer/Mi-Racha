@@ -29,31 +29,52 @@
   <div class="contenedor">
 
     <!-- ============ PANTALLA 1 · INICIO ============ -->
-    <!--
-    Saludo del estreno y de la primera apertura de cada día: recuerda la racha
-    y devuelve al tablero sin volver a pedir la frase si ya está guardada.
-    -->
-
     <section class="pantalla pantalla--centro" id="pantalla-inicio">
-      <div class="centro">
+      <!-- Los tres bloques son estados alternos de Inicio, no pantallas nuevas:
+           solo uno se ve a la vez y los otros no ocupan sitio. -->
+      <div class="centro" id="bloque-reposo">
         <p class="marca">Mi Racha</p>
         <h1 class="titulo">¿Listo para empezar?</h1>
         <p class="subtitulo">
           Registra lo que progresas cada día y mantén viva tu racha.
         </p>
-        <!-- Devuelve al tablero si ya hay frase; en el estreno abre la intención. -->
-        <button type="button" class="boton boton--grande" id="boton-iniciar-sesion">
+        <!-- `autofocus` cubre el instante entre el parseo y la ejecución de
+             `app.js`, antes de que la lógica principal pueda dar el foco. -->
+        <button type="button" class="boton boton--grande" id="boton-iniciar-sesion" autofocus>
           Iniciar sesión
         </button>
-        <p class="ayuda" id="resumen-inicio"></p>
+      </div>
+
+      <!-- El 0 % es texto fijo del marcado, no un cálculo: tiene que verse
+           aunque la lógica principal no llegue a arrancar. -->
+      <div class="carga" id="bloque-carga" hidden>
+        <p class="subtitulo">Cargando…</p>
+        <div
+          class="barra"
+          id="barra-carga"
+          role="progressbar"
+          aria-label="Carga de la aplicación"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div class="barra__relleno" id="relleno-carga"></div>
+        </div>
+        <p id="porcentaje-carga">0 %</p>
+      </div>
+
+      <!-- El aviso flota sobre Inicio para no desplazarlo. Su texto y su botón
+           son texto del marcado, nunca se insertan como HTML. -->
+      <div class="aviso" id="bloque-error" role="alert" hidden>
+        <p>Se produjo un error. Recarga la aplicación para volver a intentarlo.</p>
+        <button type="button" id="boton-recargar" class="boton boton--grande">Recargar</button>
       </div>
     </section>
 
     <!-- ============ PANTALLA 2 · INTENCIÓN ============ -->
     <!--
-    Aparece en el estreno, al pulsar «Iniciar sesión» sin frase guardada, y
-    después solo con «Cambiar frase» en el tablero: el saludo diario ya no la
-    abre para no obligar a reescribir la intención cada mañana.
+    Aparece al pulsar «Iniciar sesión» sin frase guardada y con «Cambiar frase»
+    en el tablero.
     -->
     <section class="pantalla pantalla--centro" id="pantalla-intencion" hidden>
       <div class="centro">
@@ -81,10 +102,10 @@
 
     <!-- ============ PANTALLA 3 · TABLERO ============ -->
     <!--
-    Pantalla principal: se ve en las aperturas del día posteriores al saludo y
-    al entrar desde él. Tiene la frase elegida, el interruptor de modo y «Cambiar
-    frase»; debajo, la racha de días consecutivos, el formulario de avances del
-    día y el historial reciente con el acceso a los resúmenes guardados.
+    Pantalla principal: se ve al entrar desde Inicio con frase guardada y al
+    guardar la intención. Tiene la frase elegida, el interruptor de modo y
+    «Cambiar frase»; debajo, la racha de días consecutivos, el formulario de
+    avances del día y el historial reciente con el acceso a los resúmenes.
     -->
     <section class="pantalla" id="pantalla-tablero" hidden>
       <!-- Bloque que contiene la frase ingresada por el usuario, el selector de
@@ -222,10 +243,14 @@
     dirección web. Si la descarga falla, la app cambia sola al modo
     de respaldo y sigue funcionando exactamente igual.
   -->
+  <!-- Los dos scripts externos van con `defer` y en este orden: primero el
+       motor y después la lógica, para que `app.js` encuentre `initSqlJs` sin
+       bloquear el pintado de Inicio. -->
   <script
     src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"
     onerror="window.sqlJsNoDisponible = true"
+    defer
   ></script>
-  <script src="app.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>

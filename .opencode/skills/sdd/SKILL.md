@@ -16,7 +16,7 @@ para y pregunta.
 por último en el código.
 - Cada spec vive en su carpeta: `specs/NNN-nombre/` con `spec.md`, `plan.md` y
 `tasks.md`.
-- Al terminar cada fase, actualiza `MEMORY.md`.
+- Al terminar cada fase, actualiza `AVANCES.md`.
 ## Plantilla de spec (spec.md)
 ```
 # Spec NNN — <Nombre>

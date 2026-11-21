@@ -21,10 +21,7 @@
 const Claves = {
   sesiones: 'miRacha:sesiones',
   frase: 'miRacha:frase',
-  modo: 'miRacha:modo',
-  // Día local en que se mostró Inicio: sirve para saludar una vez al día sin
-  // convertirlo en una preferencia ni en un dato de las sesiones.
-  ultimoInicio: 'miRacha:ultimo-inicio'
+  modo: 'miRacha:modo'
 };
 
 const Almacen = (function () {
@@ -736,24 +733,6 @@ function pintarHistorial(sesiones) {
   });
 }
 
-/* Pinta el resumen que se muestra en la pantalla de inicio. */
-function pintarResumenInicio() {
-  const sesiones = BaseDeDatos.listar();
-  const elemento = document.getElementById('resumen-inicio');
-  if (sesiones.length === 0) {
-    // Sin sesiones no hay resumen que mostrar: se vacía y se oculta el párrafo
-    // para que no deje un margen colgando bajo el botón de inicio.
-    elemento.textContent = '';
-    elemento.hidden = true;
-    return;
-  }
-  elemento.hidden = false;
-  const racha = calcularRacha(sesiones);
-  const totales = BaseDeDatos.resumen();
-  elemento.textContent = 'Llevas ' + racha + (racha === 1 ? ' día' : ' días') +
-    ' de racha y ' + formatearTiempo(totales.minutos) + ' de estudio en total.';
-}
-
 /* Refresca las partes del tablero que dependen de los datos. */
 function pintarTodo(idDestacado) {
   const sesiones = BaseDeDatos.listar();
@@ -803,8 +782,8 @@ function prepararFormularioSesion() {
 
 function conectarEventos() {
 
-  // El saludo diario no vuelve a pedir la frase: el tablero ya la tiene. El
-  // estreno sí la pide, para que nadie llegue a un tablero que diga «Sin frase».
+  // Con frase guardada se entra al tablero; sin ella se pide la intención para
+  // que nadie llegue a un tablero que diga «Sin frase».
   document.getElementById('boton-iniciar-sesion').addEventListener('click', function () {
     const frase = Almacen.leer(Claves.frase, '');
     if (frase) {
@@ -974,20 +953,10 @@ async function iniciar() {
   const pie = document.getElementById('pie-modo');
   pie.textContent = 'Base de datos: ' + BaseDeDatos.nombreModo();
 
-  // Inicio saluda una vez al día, no solo en el estreno: la clave guarda el día
-  // local en que se mostró, así que al cambiar de día vuelve a aparecer. Sin
-  // frase también se muestra, para no dejar un tablero sin intención propia.
-  const hoy = claveDeHoy();
-  const ultimoInicio = Almacen.leer(Claves.ultimoInicio, null);
-  const hayFrase = Almacen.leer(Claves.frase, '');
-
-  if (ultimoInicio !== hoy || !hayFrase) {
-    pintarResumenInicio();
-    mostrarPantalla('inicio');
-    Almacen.escribir(Claves.ultimoInicio, hoy);
-  } else {
-    abrirTablero();
-  }
+  // Inicio es siempre la pantalla de entrada: ni la hora local ni la frase
+  // guardada deciden el destino. Un valor viejo del último inicio se ignora
+  // y no se borra: retirar la clave no obliga a tocar datos guardados.
+  mostrarPantalla('inicio');
 
   conectarEventos();
   prepararFormularioSesion();
