@@ -15,7 +15,7 @@
 
 * Para usuarios desde teléfono o tablet:
 
-1. Abrir desde el siguiente enlace: kc-programer.github.io/Mi-Racha/
+1. Abrir desde el siguiente enlace: [kc-programer.github.io/Mi-Racha/](kc-programer.github.io/Mi-Racha/)
 (**Nota:** Se necesita conexión a internet al abrirlo por primera vez, a partir de ahí la app se puede usar con o sin conexión.)
 
 #### Advertencia⚠️: 
